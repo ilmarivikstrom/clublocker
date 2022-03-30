@@ -1,2 +1,2 @@
-data/
-venv-3.9/
+data/*
+venv-3.8/

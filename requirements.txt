@@ -1,0 +1,8 @@
+matplotlib
+numpy
+pandas
+requests
+scipy
+seaborn
+streamlit
+wheel
