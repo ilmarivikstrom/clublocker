@@ -96,7 +96,7 @@ theme = 'ggplot'
 
 
 
-st.image('res/nikkiboxi.png')
+st.image('res/legacy.png')
 st.caption('github.com/ilmarivikstrom/clublocker')
 
 st.write("# Club Locker EDA")
