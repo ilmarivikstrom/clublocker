@@ -4,3 +4,8 @@ primaryColor="#E3001A"
 backgroundColor="#1E1F22"
 secondaryBackgroundColor="#323232"
 base="dark"
+
+[server]
+headless = true
+port = $PORT
+enableCORS = false
