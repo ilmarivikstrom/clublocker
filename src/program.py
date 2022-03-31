@@ -1,5 +1,6 @@
 import datetime
 import json
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 from os import path
@@ -8,6 +9,7 @@ import requests
 import scipy
 import seaborn as sn
 import streamlit as st
+pd.options.mode.chained_assignment = None  # default='warn'
 
 def fetch_and_save_tournaments(file_name):
     tournament_types = {'scheduled': 1, 'results': 3}
@@ -39,6 +41,8 @@ def fetch_and_save_matches(tournaments_df, file_name):
     tournament_end_dates = results_df['EndDate'].values.tolist()
     dates_ids = list(zip(tournament_ids, tournament_start_dates, tournament_end_dates))
     matches_js = []
+    index = 0
+    my_bar = st.progress(0)
     for tournament in dates_ids:
         if (tournament[0] == 13512):
             print('Dunlop Cup')
@@ -51,6 +55,8 @@ def fetch_and_save_matches(tournaments_df, file_name):
                     entry['TournamentID'] = tournament[0]
                     matches_js.append(entry)
         print(f'Fetched matches from tournament {tournament[0]}. Total matches loaded: {len(matches_js)}')
+        index += 1
+        my_bar.progress(index/len(dates_ids))
     matches_df = pd.DataFrame(matches_js, columns=matches_js[0].keys())
     matches_df.to_pickle(f'data/{file_name}')
 
@@ -79,13 +85,19 @@ st.set_page_config(
 
 
 
-
-st.sidebar.write('Sidebar text')
-st.sidebar.button("Click me!")
+theme = st.sidebar.selectbox('Select the theme', ['ggplot', 'dark_background'])
 
 
 st.write("# Clublocker Exploratory Data Analysis")
 
+
+
+
+colors = ['#BC9343', '#9B7A35', '#5D4B22', '#020202', '#E3021A']
+#custom_palette = sn.dark_palette(colors[0], as_cmap=True)
+#custom_palette = sn.diverging_palette(h_neg=0, h_pos=39, s=47, l=50, center='dark', as_cmap=True)
+custom_palette_cmap = sn.blend_palette(colors=[(0.0008, 0.0008, 0.0008, 1), (0.89, 0.00, 0.102, 1), (0.737, 0.573, 0.26, 1)], n_colors=100, as_cmap=True)
+custom_palette = sn.blend_palette(colors=[(0.0008, 0.0008, 0.0008, 1), (0.89, 0.00, 0.102, 1), (0.737, 0.573, 0.26, 1)], n_colors=100, as_cmap=False)
 
 
 current_date = datetime.datetime.now().date()
@@ -128,37 +140,32 @@ start_dates = pd.to_datetime(tournaments_filtered['StartDate'].values.tolist())
 covid = []
 for start_date in start_dates:
     if start_date < pd.to_datetime('2020-03-01'):
-        covid.append(0)
+        covid.append('pre')
     else:
-        covid.append(1)
+        covid.append('post')
 tournaments_filtered['covid'] = covid
-
-
-
 tournaments_filtered['StartDateTimeStamp'] = pd.to_datetime(tournaments_filtered['StartDate'])
 tournaments_filtered['StartDateTimeStamp'] = tournaments_filtered['StartDateTimeStamp'].map(dt.datetime.toordinal)
+tournaments_filtered = tournaments_filtered.sort_values('StartDatePandas')
 
-
-
-plt.style.use('ggplot')
-fig, ax = plt.subplots()
-ax.set_xlabel('Ordinal timestamp')
-ax.set_ylabel('Number of matches in tournament')
-tournaments_filtered_nocovid = tournaments_filtered.loc[tournaments_filtered['covid'] == 0]
-tournaments_filtered_yescovid = tournaments_filtered.loc[tournaments_filtered['covid'] == 1]
-ax.plot(tournaments_filtered_nocovid['StartDateTimeStamp'], tournaments_filtered_nocovid['NumMatches'], 'g.', label='Pre-covid')
-ax.plot(tournaments_filtered_yescovid['StartDateTimeStamp'], tournaments_filtered_yescovid['NumMatches'], 'r.', label='Post-covid')
-window = 10
-rolling_average = tournaments_filtered['NumMatches'].rolling(window, center=True).mean()
-ax.plot(tournaments_filtered['StartDateTimeStamp'], rolling_average, 'y', label=f'Rolling avg over {window} tournaments')
-m, b = np.polyfit(tournaments_filtered['StartDateTimeStamp'], tournaments_filtered['NumMatches'], 1)
-ax.plot(tournaments_filtered['StartDateTimeStamp'], m * tournaments_filtered['StartDateTimeStamp'] + b, linewidth=2, label='Linear trend')
-ax.legend()
+plt.style.use(theme)
 
 
 
 st.write('### Tournaments')
 st.caption('Number of matches in each of the tournaments. All canceled tournaments are excluded from the data.')
+fig, ax = plt.subplots()
+ax.set_xlabel('Date')
+ax.set_ylabel('Number of matches in tournament')
+sn.scatterplot(data=tournaments_filtered, x='StartDateTimeStamp', y='NumMatches', hue='covid', palette=[custom_palette[0], custom_palette[-1]])
+sn.regplot(data=tournaments_filtered, x='StartDateTimeStamp', y='NumMatches', scatter=False, order=3)
+
+xticks = ax.get_xticks()
+xticks_dates = [pd.to_datetime(dt.date.fromordinal(int(x))).date() for x in xticks]
+ax.set_xticklabels(xticks_dates)
+
+for label in ax.get_xticklabels(which='major'):
+    label.set(rotation=30, horizontalalignment='center', fontsize=8)
 st.pyplot(fig)
 
 
@@ -167,13 +174,18 @@ st.pyplot(fig)
 st.write('### Match analytics')
 # Filter out some early weird data, not valid matches, etc.
 matches_subset = matches_df.loc[(matches_df['matchid'] > 1000000) & (matches_df['Rallies'] > 20)]
-fig2, ax2 = plt.subplots(1, 2)
-ax2[0].set_xlabel('Number of Rallies')
-ax2[0].set_ylabel('Match count')
-sn.scatterplot(ax=ax2[0], x=matches_subset.groupby(by='Rallies').count()['matchid'].index, y=matches_subset.groupby(by='Rallies').count()['matchid'].values.tolist(), palette='flare')
-ax2[1].set_xlabel('Number of Rallies')
-ax2[1].set_ylabel('Density')
-sn.kdeplot(ax=ax2[1], data=matches_df, x='Rallies', palette='flare', bw_adjust=.5)
+fig2, ax2 = plt.subplots()
+ax2.set_xlabel('Number of Rallies')
+ax2.set_ylabel('Match count')
+# HACK: Set the ylims so that the scatter and the pdf match visually.
+ax2.set_ylim([-10, 190])
+sn.histplot(ax=ax2, data=matches_subset[['Rallies']], binwidth=1, legend=False)
+ax3 = ax2.twinx()
+ax3.set_xlabel('Number of Rallies')
+ax3.set_ylabel('Density')
+# HACK: Set the ylims so that the scatter and the pdf match visually.
+ax3.set_ylim([-0.002, 0.038])
+sn.kdeplot(ax=ax3, data=matches_subset, x='Rallies', bw_adjust=.4, palette=custom_palette_cmap)
 st.pyplot(fig2)
 
 
@@ -187,7 +199,7 @@ ax3.set_xlabel('Time')
 ax3.set_ylabel('Number of Rallies')
 matches_subset = matches_df.loc[matches_df['TournamentID'] == selected_tournament_id][['matchStart', 'Rallies']].dropna()
 matches_subset = matches_subset.loc[pd.to_datetime(matches_subset['matchStart']) > pd.to_datetime('01-01-2018T00:00:00.000Z')]
-ax3.plot(pd.to_datetime(matches_subset['matchStart']), matches_subset['Rallies'], 'g.')
+sn.scatterplot(x = pd.to_datetime(matches_subset['matchStart']), y = matches_subset['Rallies'], hue=matches_subset['Rallies'], palette=custom_palette_cmap)
 st.pyplot(fig3)
 
 
@@ -202,15 +214,14 @@ selected_tournament_ids = tournaments_filtered.loc[tournaments_filtered['Tournam
 fig4, ax4 = plt.subplots()
 ax4.set_xlabel('Match duration (minutes)')
 ax4.set_ylabel('Number of Rallies')
-g = sn.scatterplot(data=matches_df.loc[matches_df['NumberOfGames'] >= 3], x='MatchDuration', y='Rallies', hue='NumberOfGames', size='NumberOfGames', palette='flare', alpha=0.8)
+g = sn.scatterplot(data=matches_df.loc[matches_df['NumberOfGames'] >= 3], x='MatchDuration', y='Rallies', hue='NumberOfGames', alpha=0.9, palette=custom_palette_cmap)
 g.set(xlim=(0,90))
-#sn.scatterplot(data=matches_df.loc[(matches_df['NumberOfGames'] >= 3) & (matches_df['TournamentID'].isin(selected_tournament_ids))], x='MatchDuration', y='Rallies', hue='NumberOfGames', size='NumberOfGames', palette='flare', alpha=0.8)
 st.pyplot(fig4)
 
 
 
 fig5, ax5 = plt.subplots()
-g = sn.kdeplot(data=matches_df.loc[matches_df['NumberOfGames'] >= 3], x='MatchDuration', hue='NumberOfGames', palette='flare', fill=True, alpha=0.5)
+g = sn.kdeplot(data=matches_df.loc[matches_df['NumberOfGames'] >= 3], x='MatchDuration', hue='NumberOfGames', fill=True, alpha=0.5, palette=custom_palette_cmap)
 g.set(xlim=(0,90))
 ax5.set_xlabel('Match duration (minutes)')
 st.pyplot(fig5)
