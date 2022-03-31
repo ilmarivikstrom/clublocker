@@ -96,7 +96,6 @@ theme = 'ggplot'
 
 
 
-
 st.image('res/nikkiboxi.png')
 st.caption('github.com/ilmarivikstrom/clublocker')
 
@@ -104,12 +103,10 @@ st.write("# Club Locker EDA")
 
 
 
-
 colors = ['#BC9343', '#9B7A35', '#5D4B22', '#020202', '#E3021A']
-#custom_palette = sn.dark_palette(colors[0], as_cmap=True)
-#custom_palette = sn.diverging_palette(h_neg=0, h_pos=39, s=47, l=50, center='dark', as_cmap=True)
 custom_palette_cmap = sn.blend_palette(colors=[(0.0008, 0.0008, 0.0008, 1), (0.89, 0.00, 0.102, 1), (0.737, 0.573, 0.26, 1)], n_colors=100, as_cmap=True)
 custom_palette = sn.blend_palette(colors=[(0.0008, 0.0008, 0.0008, 1), (0.89, 0.00, 0.102, 1), (0.737, 0.573, 0.26, 1)], n_colors=100, as_cmap=False)
+
 
 
 current_date = datetime.datetime.now().date()
@@ -254,6 +251,8 @@ st.pyplot(fig5)
 
 st.markdown('---')
 
+
+
 st.write('### Match length visualization for a selected tournament')
 selected_tournament = st.selectbox('Select the tournament name', tournaments_filtered['TournamentName'].loc[tournaments_filtered['Type'] == 'results'])
 selected_tournament_id = tournaments_filtered.loc[tournaments_filtered['TournamentName'] == selected_tournament]['TournamentID'].values[0]
@@ -270,22 +269,9 @@ for label in ax3.get_xticklabels(which='major'):
 st.pyplot(fig3)
 
 
+
 st.markdown('---')
 
-
-
-# TODO: Figure out why sort_values does not work with ns.PairGrid
-# sample = matches_df.loc[matches_df['NumberOfGames'] >= 3].sample(50).sort_values('Rallies', ascending=False).reset_index(drop=True)
-# x_cols = ['Rallies', 'MatchDuration', 'NumberOfGames']
-# g = sn.PairGrid(sample, x_vars=x_cols, y_vars=['matchid'], height=10, aspect=0.25)
-# g.map(sn.stripplot, size=10, orient='h', jitter=False, palette='flare', linewidth=1, edgecolor='w')
-# g.set(ylabel='Match ID')
-# for ax, title in zip(g.axes.flat, x_cols):
-#     ax.set(title=title)
-#     ax.xaxis.grid(False)
-#     ax.yaxis.grid(True)
-# sn.despine(left=True, bottom=True)
-# st.pyplot(g)
 
 
 st.write('### Individual player statistics based on tournament data')
@@ -312,33 +298,3 @@ ax.set_ylabel('Number of rallies')
 for label in ax.get_xticklabels(which='major'):
     label.set(rotation=30, horizontalalignment='center', fontsize=8)
 st.pyplot(fig)
-
-
-
-
-# ### Multiselect
-# selected_tournaments = st.multiselect('Select tournaments', tournaments_filtered['TournamentName'].loc[tournaments_filtered['Type'] == 'results'])
-# selected_tournament_ids = tournaments_filtered.loc[tournaments_filtered['TournamentName'].isin(selected_tournaments)]['TournamentID'].values.tolist()
-# ###
-
-
-# with st.form("my_form"):
-#     st.write("Inside the form")
-#     slider_val = st.slider("Form slider")
-#     checkbox_val = st.checkbox("Form checkbox")
-#     # Every form must have a submit button.
-#     submitted = st.form_submit_button("Submit")
-#     if submitted:
-#         st.write("slider", slider_val, "checkbox", checkbox_val)
-# st.write("Outside the form")
-
-
-
-# Instead of corr() maybe find
-# fig3, ax3 = plt.subplots()
-# normal_columns = ['TournamentID', 'PlayersOnDraw', 'NumMatches']
-# cat_columns = ['TournamentContact', 'TournamentName', 'StartDate', 'EndDate', 'SiteCity', 'Entry_Open', 'Entry_Close', 'Entry_Close_Time', 'EarlyBirdRegistrationDeadline', 'Registration_Deadline', 'VenueId', 'EventType', 'EventTypeCode', 'EntryForm', 'CreateDate', 'UpdateDate', 'VenueName', 'Type']
-# for cat_column in cat_columns:
-#     tournaments_df[cat_column] = tournaments_df[cat_column].astype('category').cat.codes
-# sn.heatmap(tournaments_df[normal_columns+cat_columns].corr(), annot=False, cmap='coolwarm')
-# st.pyplot(fig3)
