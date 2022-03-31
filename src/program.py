@@ -1,3 +1,9 @@
+# TODO: Liigat: https://api.ussquash.com/resources/leagues?TopRecords=50&OrganizationId=10142&Admin=false&Status=0 --> & status 1 --> leagueid
+# TODO: Liiga: https://api.ussquash.com/resources/leagues/results/606 --> scorecardid
+# TODO: Scorecard: https://api.ussquash.com/resources/leagues/scorecards/live?id=133473
+
+
+
 import datetime
 import json
 import matplotlib.dates as mdates
@@ -88,7 +94,11 @@ st.set_page_config(
 theme = st.sidebar.selectbox('Select the theme', ['ggplot', 'dark_background'])
 
 
-st.write("# Clublocker Exploratory Data Analysis")
+
+
+st.image('res/nikkiboxi.png')
+
+st.write("# Club Locker Exploratory Data Analysis")
 
 
 
@@ -106,6 +116,16 @@ if not path.exists(f'data/tournaments_{str(current_date)}.pkl'):
     with st.spinner("Loading tournament data from Club Locker, please be patient..."):
         fetch_and_save_tournaments(file_name=f'tournaments_{str(current_date)}.pkl')
 tournaments_df = load_pickle(file_name=f'tournaments_{str(current_date)}.pkl')
+@st.cache
+def convert_df(df):
+    return df.to_csv().encode('utf-8')
+csv = convert_df(tournaments_df)
+st.sidebar.download_button(
+    label="Download raw tournament data as CSV",
+    data=csv,
+    file_name=f'tournaments_{str(current_date)}.csv',
+    mime='text/csv',
+)
 tournaments_df['StartDatePandas'] = pd.to_datetime(tournaments_df['StartDate'])
 tournaments_filtered = tournaments_df[tournaments_df['NumMatches'] > 0]
 st.success(f"Tournament data covers {len(tournaments_filtered)} tournaments starting from {str(tournaments_df['StartDatePandas'].min().date())} and ending in {str(tournaments_df['StartDatePandas'].max().date())}.")
@@ -114,6 +134,17 @@ if not path.exists(f'data/matches_{str(current_date)}.pkl'):
     with st.spinner("Loading match data from Club Locker. This can take a while, please be patient..."):
         fetch_and_save_matches(tournaments_filtered, file_name=f'matches_{str(current_date)}.pkl')
 matches_df = load_pickle(file_name=f'matches_{str(current_date)}.pkl')
+
+@st.cache
+def convert_df(df):
+    return df.to_csv().encode('utf-8')
+csv = convert_df(matches_df)
+st.sidebar.download_button(
+    label="Download raw match data as CSV",
+    data=csv,
+    file_name=f'matches_{str(current_date)}.csv',
+    mime='text/csv',
+ )
 
 matches_df['MatchDatePandas'] = pd.to_datetime(matches_df['MatchDate'])
 matches_df['Game1'] = (matches_df['wset1'] + matches_df['oset1']).fillna(0)
@@ -127,7 +158,11 @@ matches_df = matches_df.loc[matches_df['MatchDuration'] < pd.Timedelta(2, 'h')]
 matches_df = matches_df.loc[matches_df['MatchDuration'] > pd.Timedelta(4, 'm')]
 matches_df['MatchDuration'] = matches_df['MatchDuration'].astype('timedelta64[m]')
 matches_df['Rallies'] = matches_df[['wset1', 'oset1', 'wset2', 'oset2', 'wset3', 'oset3', 'wset4', 'oset4', 'wset5', 'oset5']].dropna().sum(axis=1)
+matches_df['WinnerPlayer'] = matches_df['vPlayerName'].loc[matches_df['Winner'] == 'V'].dropna().combine_first(matches_df['hPlayerName'].loc[matches_df['Winner'] == 'H'].dropna())
+matches_df['LoserPlayer'] = matches_df['vPlayerName'].loc[matches_df['Winner'] == 'H'].dropna().combine_first(matches_df['hPlayerName'].loc[matches_df['Winner'] == 'V'].dropna())
 st.success(f"Match data covers {len(matches_df)} matches starting from {str(matches_df['MatchDatePandas'].min().date())} and ending in {str(matches_df['MatchDatePandas'].max().date())}.")
+
+
 
 
 
@@ -146,7 +181,6 @@ for start_date in start_dates:
 tournaments_filtered['covid'] = covid
 tournaments_filtered['StartDateTimeStamp'] = pd.to_datetime(tournaments_filtered['StartDate'])
 tournaments_filtered['StartDateTimeStamp'] = tournaments_filtered['StartDateTimeStamp'].map(dt.datetime.toordinal)
-tournaments_filtered = tournaments_filtered.sort_values('StartDatePandas')
 
 plt.style.use(theme)
 
@@ -155,15 +189,13 @@ plt.style.use(theme)
 st.write('### Tournaments')
 st.caption('Number of matches in each of the tournaments. All canceled tournaments are excluded from the data.')
 fig, ax = plt.subplots()
+sn.scatterplot(data=tournaments_filtered.sort_values('StartDatePandas'), x='StartDateTimeStamp', y='NumMatches', hue='covid', palette=[custom_palette[0], custom_palette[-1]])
+sn.regplot(data=tournaments_filtered.sort_values('StartDatePandas'), x='StartDateTimeStamp', y='NumMatches', scatter=False, order=3)
 ax.set_xlabel('Date')
 ax.set_ylabel('Number of matches in tournament')
-sn.scatterplot(data=tournaments_filtered, x='StartDateTimeStamp', y='NumMatches', hue='covid', palette=[custom_palette[0], custom_palette[-1]])
-sn.regplot(data=tournaments_filtered, x='StartDateTimeStamp', y='NumMatches', scatter=False, order=3)
-
 xticks = ax.get_xticks()
 xticks_dates = [pd.to_datetime(dt.date.fromordinal(int(x))).date() for x in xticks]
 ax.set_xticklabels(xticks_dates)
-
 for label in ax.get_xticklabels(which='major'):
     label.set(rotation=30, horizontalalignment='center', fontsize=8)
 st.pyplot(fig)
@@ -200,14 +232,9 @@ ax3.set_ylabel('Number of Rallies')
 matches_subset = matches_df.loc[matches_df['TournamentID'] == selected_tournament_id][['matchStart', 'Rallies']].dropna()
 matches_subset = matches_subset.loc[pd.to_datetime(matches_subset['matchStart']) > pd.to_datetime('01-01-2018T00:00:00.000Z')]
 sn.scatterplot(x = pd.to_datetime(matches_subset['matchStart']), y = matches_subset['Rallies'], hue=matches_subset['Rallies'], palette=custom_palette_cmap)
+for label in ax3.get_xticklabels(which='major'):
+    label.set(rotation=30, horizontalalignment='center', fontsize=8)
 st.pyplot(fig3)
-
-
-
-### Multiselect
-selected_tournaments = st.multiselect('Select tournaments', tournaments_filtered['TournamentName'].loc[tournaments_filtered['Type'] == 'results'])
-selected_tournament_ids = tournaments_filtered.loc[tournaments_filtered['TournamentName'].isin(selected_tournaments)]['TournamentID'].values.tolist()
-###
 
 
 
@@ -243,15 +270,27 @@ st.pyplot(fig5)
 
 
 
-
-name = st.text_input('Player name', 'Search here!')
 matches_df_dropna = matches_df.dropna(subset=['vPlayerName', 'hPlayerName'])
+unique_player_names = np.sort(pd.unique(matches_df_dropna[['vPlayerName', 'hPlayerName']].values.ravel('K')))
+name = st.selectbox('Search player', unique_player_names)
 search_results = matches_df_dropna.loc[matches_df_dropna['vPlayerName'].str.contains(name, case=False) | matches_df_dropna['hPlayerName'].str.contains(name, case=False)]
+search_results['Win'] = (search_results['WinnerPlayer'] == name)
 st.dataframe(search_results[['matchid', 'hPlayerName', 'vPlayerName', 'Score_Short', 'Winner', 'Rallies']])
 st.caption(f'Found {len(search_results)} matches')
 
+fig, ax = plt.subplots()
+sn.scatterplot(data=search_results, y='Rallies', x='MatchDatePandas', hue='Win', palette=[custom_palette[0], custom_palette[-1]])
+for label in ax.get_xticklabels(which='major'):
+    label.set(rotation=30, horizontalalignment='center', fontsize=8)
+st.pyplot(fig)
 
 
+
+
+# ### Multiselect
+# selected_tournaments = st.multiselect('Select tournaments', tournaments_filtered['TournamentName'].loc[tournaments_filtered['Type'] == 'results'])
+# selected_tournament_ids = tournaments_filtered.loc[tournaments_filtered['TournamentName'].isin(selected_tournaments)]['TournamentID'].values.tolist()
+# ###
 
 
 # with st.form("my_form"):
