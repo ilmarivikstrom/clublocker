@@ -192,8 +192,10 @@ st.write('Data includes all tournaments that are (publicly) visible in Club Lock
 st.write('### Participation over time')
 st.write('Let\'s examine the general tournament participation over time:')
 fig, ax = plt.subplots()
+fig.tight_layout()
 sn.scatterplot(data=tournaments_filtered.sort_values('StartDatePandas'), x='StartDateTimeStamp', y='NumPlayers', hue='covid', palette=[custom_palette[0], custom_palette[-1]])
 sn.regplot(data=tournaments_filtered.sort_values('StartDatePandas'), x='StartDateTimeStamp', y='NumPlayers', scatter=False, order=3)
+sn.regplot(data=tournaments_filtered.loc[tournaments_filtered['covid'] == 'pre'].sort_values('StartDatePandas'), x='StartDateTimeStamp', y='NumPlayers', scatter=False, order=1)
 ax.set_xlabel('Date')
 ax.set_ylabel('Number of players in tournament')
 xticks = ax.get_xticks()
@@ -202,7 +204,7 @@ ax.set_xticklabels(xticks_dates)
 for label in ax.get_xticklabels(which='major'):
     label.set(rotation=30, horizontalalignment='center', fontsize=8)
 st.pyplot(fig)
-st.write('Data seems to suggest that a decreasing trend in tournament participation was in place already during pre-covid era. Summer breaks and lockdown periods are visible as temporal gaps in the data.')
+st.write('Data seems to suggest that a decreasing trend in tournament participation was in place already during pre-covid era. This is indicated by the slowly decreasing blue line. Summer breaks and lockdown periods are visible as temporal gaps in the data.')
 
 
 st.markdown('---')
@@ -216,6 +218,7 @@ st.write('Let\'s see what the distribution looks like:')
 
 matches_subset = matches_df.loc[(matches_df['matchid'] > 1000000) & (matches_df['Rallies'] > 20)]
 fig2, ax2 = plt.subplots()
+fig2.tight_layout()
 ax2.set_xlabel('Number of rallies')
 ax2.set_ylabel('Match count')
 # HACK: Set the ylims so that the scatter and the pdf match visually.
@@ -226,7 +229,7 @@ ax3.set_xlabel('Number of rallies')
 ax3.set_ylabel('Density')
 # HACK: Set the ylims so that the scatter and the pdf match visually.
 ax3.set_ylim([-0.002, 0.038])
-sn.kdeplot(ax=ax3, data=matches_subset, x='Rallies', bw_adjust=.4, palette=custom_palette_cmap)
+sn.kdeplot(ax=ax3, data=matches_subset, x='Rallies', bw_adjust=.5, palette=custom_palette_cmap)
 st.pyplot(fig2)
 
 
@@ -242,6 +245,7 @@ st.pyplot(fig4)
 
 st.write('Finally, here\'s a distribution view of the same phenomena:')
 fig5, ax5 = plt.subplots()
+fig5.tight_layout()
 g = sn.kdeplot(data=matches_df.loc[matches_df['NumberOfGames'] >= 3], x='MatchDuration', hue='NumberOfGames', fill=True, alpha=0.5, palette=custom_palette_cmap)
 g.set(xlim=(0,90))
 ax5.set_xlabel('Match duration (minutes)')
@@ -259,6 +263,7 @@ selected_tournament_id = tournaments_filtered.loc[tournaments_filtered['Tourname
 selected_matches = matches_df.loc[matches_df['TournamentID'] == selected_tournament_id]
 st.write(f'Selected {len(selected_matches)} matches from {selected_tournament}')
 fig3, ax3 = plt.subplots()
+fig3.tight_layout()
 ax3.set_xlabel('Time')
 ax3.set_ylabel('Number of Rallies')
 matches_subset = matches_df.loc[matches_df['TournamentID'] == selected_tournament_id][['matchStart', 'Rallies']].dropna()
@@ -288,6 +293,7 @@ st.caption(f'Found {len(search_results)} matches for player {name}')
 st.write('And here\'s the visualization of wins and losses of the selected player\'s matches:')
 
 fig, ax = plt.subplots()
+fig.tight_layout()
 # HACK: Work around the palette bug when there's not enough categories:
 hack_palette = [custom_palette[0], custom_palette[-1]]
 if len(search_results['Win'].unique()) == 1:
