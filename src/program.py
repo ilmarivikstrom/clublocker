@@ -219,13 +219,13 @@ st.write('Let\'s see what the distribution looks like:')
 
 matches_subset = matches_df.loc[(matches_df['matchid'] > 1000000) & (matches_df['Rallies'] > 20)]
 fig2, ax2 = plt.subplots()
-ax2.set_xlabel('Number of Rallies')
+ax2.set_xlabel('Number of rallies')
 ax2.set_ylabel('Match count')
 # HACK: Set the ylims so that the scatter and the pdf match visually.
 ax2.set_ylim([-10, 190])
 sn.histplot(ax=ax2, data=matches_subset[['Rallies']], binwidth=1, legend=False)
 ax3 = ax2.twinx()
-ax3.set_xlabel('Number of Rallies')
+ax3.set_xlabel('Number of rallies')
 ax3.set_ylabel('Density')
 # HACK: Set the ylims so that the scatter and the pdf match visually.
 ax3.set_ylim([-0.002, 0.038])
@@ -303,6 +303,8 @@ st.write('And here\'s the visualization of wins and losses of the selected playe
 
 fig, ax = plt.subplots()
 sn.scatterplot(data=search_results, y='Rallies', x='MatchDatePandas', hue='Win', palette=[custom_palette[0], custom_palette[-1]])
+ax.set_xlabel('Date')
+ax.set_ylabel('Number of rallies')
 for label in ax.get_xticklabels(which='major'):
     label.set(rotation=30, horizontalalignment='center', fontsize=8)
 st.pyplot(fig)
