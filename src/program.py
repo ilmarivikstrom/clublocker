@@ -78,7 +78,7 @@ def get_player_matches(matches_df, player_name):
 
 st.set_page_config(
      page_title="Club Locker Analytics",
-     page_icon="🎾",
+     page_icon="res/nikkiboxi.png",
      layout="centered",
      initial_sidebar_state="collapsed",
      menu_items={
