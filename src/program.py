@@ -302,7 +302,11 @@ st.caption(f'Found {len(search_results)} matches for player {name}')
 st.write('And here\'s the visualization of wins and losses of the selected player\'s matches:')
 
 fig, ax = plt.subplots()
-sn.scatterplot(data=search_results, y='Rallies', x='MatchDatePandas', hue='Win', palette=[custom_palette[0], custom_palette[-1]])
+# HACK: Work around the palette bug when there's not enough categories:
+hack_palette = [custom_palette[0], custom_palette[-1]]
+if len(search_results['Win'].unique()) == 1:
+    hack_palette = [custom_palette[int((len(custom_palette) - 1) / 2)]]
+sn.scatterplot(data=search_results, y='Rallies', x='MatchDatePandas', hue='Win', palette=hack_palette)
 ax.set_xlabel('Date')
 ax.set_ylabel('Number of rallies')
 for label in ax.get_xticklabels(which='major'):
