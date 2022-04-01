@@ -198,8 +198,10 @@ sn.regplot(data=tournaments_filtered.sort_values('StartDatePandas'), x='StartDat
 sn.regplot(data=tournaments_filtered.loc[tournaments_filtered['covid'] == 'pre'].sort_values('StartDatePandas'), x='StartDateTimeStamp', y='NumPlayers', scatter=False, order=1)
 ax.set_xlabel('Date')
 ax.set_ylabel('Number of players in tournament')
+ax.xaxis.set_major_locator(mdates.YearLocator())
 xticks = ax.get_xticks()
 xticks_dates = [pd.to_datetime(dt.date.fromordinal(int(x))).date() for x in xticks]
+xticks_dates = [x + pd.Timedelta(1, 'd') if x.day == 31 else x for x in xticks_dates]
 ax.set_xticklabels(xticks_dates)
 for label in ax.get_xticklabels(which='major'):
     label.set(rotation=30, horizontalalignment='center', fontsize=8)
