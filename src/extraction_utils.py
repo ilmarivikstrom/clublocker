@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import requests
+import streamlit as st
 
 
 def fetch_and_save_tournaments(file_name):
