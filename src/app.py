@@ -3,6 +3,7 @@
 # TODO: Scorecard: https://api.ussquash.com/resources/leagues/scorecards/live?id=133473
 
 import datetime as dt
+import pytz
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
@@ -104,6 +105,11 @@ matches_df['Game3'] = (matches_df['wset3'] + matches_df['oset3']).fillna(0)
 matches_df['Game4'] = (matches_df['wset4'] + matches_df['oset4']).fillna(0)
 matches_df['Game5'] = (matches_df['wset5'] + matches_df['oset5']).fillna(0)
 matches_df['NumberOfGames'] = (matches_df[['Game1', 'Game2', 'Game3', 'Game4', 'Game5']] != 0).astype(int).sum(axis=1)
+matches_df['Game1DurationSecs'] = pd.to_datetime(matches_df['gameDuration1']) - dt.datetime.fromtimestamp(0, pytz.utc)
+matches_df['Game2DurationSecs'] = pd.to_datetime(matches_df['gameDuration2']) - dt.datetime.fromtimestamp(0, pytz.utc)
+matches_df['Game3DurationSecs'] = pd.to_datetime(matches_df['gameDuration3']) - dt.datetime.fromtimestamp(0, pytz.utc)
+matches_df['Game4DurationSecs'] = pd.to_datetime(matches_df['gameDuration4']) - dt.datetime.fromtimestamp(0, pytz.utc)
+matches_df['Game5DurationSecs'] = pd.to_datetime(matches_df['gameDuration5']) - dt.datetime.fromtimestamp(0, pytz.utc)
 matches_df['MatchDuration'] = pd.to_datetime(matches_df['matchEnd']) - pd.to_datetime(matches_df['matchStart'])
 matches_df = matches_df.loc[matches_df['MatchDuration'] < pd.Timedelta(2, 'h')]
 matches_df = matches_df.loc[matches_df['MatchDuration'] > pd.Timedelta(4, 'm')]
@@ -114,6 +120,7 @@ matches_df['WinnerPlayer'] = matches_df['vPlayerName'].loc[matches_df['Winner'] 
 matches_df['LoserPlayer'] = matches_df['vPlayerName'].loc[matches_df['Winner'] == 'H'].dropna().combine_first(matches_df['hPlayerName'].loc[matches_df['Winner'] == 'V'].dropna())
 header_container.info(f"Match data covers {len(matches_df)} matches starting from {str(matches_df['MatchDatePandas'].min().date())} and ending in {str(matches_df['MatchDatePandas'].max().date())}.")
 
+#datetime.datetime.strptime(matches_df.iloc[0].gameDuration1, '%Y-%m-%dT%H:%M:%S.%f%z').time()
 
 header_container.markdown('---')
 
