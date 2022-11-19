@@ -205,7 +205,7 @@ def _fetch_and_save_tournaments(file_name):
     tournaments_df.to_pickle(f"data/{file_name}")
 
 
-@st.experimental_memo(ttl=24 * 60 * 60, suppress_st_warning=True)
+@st.cache(ttl=60*24*60, suppress_st_warning=True)
 def _fetch_and_save_tournament_matches(tournaments_df, file_name):
     # Only take matches from tournaments that have passed.
     # results_df = tournaments_df.loc[tournaments_df['Type'] == 'results']
