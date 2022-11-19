@@ -1,4 +1,5 @@
 # Club Locker Exploratory Data Analysis
+## [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ilmarivikstrom-clublocker-srcapp-8snuhh.streamlit.app/)
 
 - Fetches newest tournament and match data in the beginning of the first run of the day.
 - If you want to run the app by yourself locally, using >=py38 (and venv for clean installation) is suggested.

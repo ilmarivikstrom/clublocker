@@ -5,5 +5,5 @@ secondaryBackgroundColor="#323232"
 base="dark"
 [server]
 headless = true
-port = $PORT
+port = 80
 enableCORS = false
