@@ -330,10 +330,18 @@ demographics_container.pyplot(fig)
 
 demographics_container.markdown("---")
 
-
 new_container = st.container()
-new_container.write("### Matches played over different months")
+new_container.write("### Matches played in tournaments over years and months")
 fig, ax = plt.subplots()
+
+tournaments_months_weeks = (
+    tournaments_df.groupby(by=["Month", "Year"])
+    .sum()[["NumMatches"]]
+    .reset_index()
+    .pivot("Year", "Month", "NumMatches")
+    .fillna(0)
+    .astype(int)
+)
 
 matches_months_weeks = (
     matches_df.groupby(by=["Month", "Weekday"])
@@ -345,12 +353,11 @@ matches_months_weeks = (
 )
 
 sn.heatmap(
-    matches_months_weeks,
+    tournaments_months_weeks,
     linewidths=1,
     cmap="YlGn",
     linecolor="white",
-    square=True,
-    annot=True,
+    square=False,
     fmt="d",
 )
 new_container.pyplot(fig)

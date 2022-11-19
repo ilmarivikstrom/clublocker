@@ -76,6 +76,18 @@ def _preprocess_tournaments(tournaments_df_dirty):
     tournaments_df_dirty["StartDateTimeStamp"] = tournaments_df_dirty[
         "StartDateTimeStamp"
     ].map(dt.datetime.toordinal)
+    tournaments_df_dirty["Weekday"] = [
+        x.weekday() for x in tournaments_df_dirty["StartDatePandas"]
+    ]
+    tournaments_df_dirty["Year"] = [
+        x.year for x in tournaments_df_dirty["StartDatePandas"]
+    ]
+    tournaments_df_dirty["Month"] = [
+        x.month for x in tournaments_df_dirty["StartDatePandas"]
+    ]
+    tournaments_df_dirty["Week"] = [
+        x.week for x in tournaments_df_dirty["StartDatePandas"]
+    ]
     tournaments_df = tournaments_df_dirty
     return tournaments_df
 
@@ -182,6 +194,7 @@ def _preprocess_matches(matches_df_dirty):
     matches_df_dirty["Weekday"] = [
         x.weekday() for x in matches_df_dirty["MatchDatePandas"]
     ]
+    matches_df_dirty["Year"] = [x.year for x in matches_df_dirty["MatchDatePandas"]]
     matches_df_dirty["Month"] = [x.month for x in matches_df_dirty["MatchDatePandas"]]
     matches_df_dirty["Week"] = [x.week for x in matches_df_dirty["MatchDatePandas"]]
     matches_df = matches_df_dirty
