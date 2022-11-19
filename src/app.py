@@ -3,20 +3,18 @@
 # TODO: Scorecard: https://api.ussquash.com/resources/leagues/scorecards/live?id=133473
 
 import datetime as dt
-import pytz
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
-from os import path
 import pandas as pd
 import seaborn as sn
 import streamlit as st
-from utils.extraction import (
-    fetch_and_save_tournaments,
-    fetch_and_save_tournament_matches,
-    fetch_rankings,
-    load_pickle,
-)
+from utils.extraction import load_tournaments, load_matches, load_rankings
+from utils.general import convert_df_to_csv
+from pyinstrument import Profiler
+
+profiler = Profiler()
+profiler.start()
 
 
 # Basic configurations.
@@ -49,6 +47,7 @@ custom_palette = sn.blend_palette(
     n_colors=100,
     as_cmap=False,
 )
+current_date = dt.datetime.now().date()
 
 
 # Page header.
@@ -57,152 +56,31 @@ header_container.image("res/legacy.png")
 header_container.caption("github.com/ilmarivikstrom/clublocker")
 header_container.write("# Club Locker EDA")
 
+tournaments_df = load_tournaments()
+matches_df = load_matches(tournaments_df)
+rankings_df = load_rankings()
 
-# Fetch and save tournaments, if needed.
-current_date = dt.datetime.now().date()
-if not path.exists(f"data/tournaments_{str(current_date)}.pkl"):
-    with st.spinner("Loading tournament data from Club Locker, please be patient..."):
-        fetch_and_save_tournaments(file_name=f"tournaments_{str(current_date)}.pkl")
-tournaments_df = load_pickle(file_name=f"tournaments_{str(current_date)}.pkl")
-tournaments_df["StartDatePandas"] = pd.to_datetime(tournaments_df["StartDate"])
-tournaments_filtered = tournaments_df[
-    (tournaments_df["NumMatches"] > 0) & (tournaments_df["NumPlayers"] > 0)
-]
-
-
-# Fetch and save tournament matches, if needed.
-if not path.exists(f"data/matches_{str(current_date)}.pkl"):
-    with st.spinner(
-        "Loading match data from Club Locker. This can take a while, please be patient..."
-    ):
-        fetch_and_save_tournament_matches(
-            tournaments_filtered, file_name=f"matches_{str(current_date)}.pkl"
-        )
-matches_df = load_pickle(file_name=f"matches_{str(current_date)}.pkl")
-
-
-# Fetch and save ranking data, if needed.
-if not path.exists(f"data/rankings_{str(current_date)}.pkl"):
-    with st.spinner("Loading ranking data from Club Locker, please be patient..."):
-        fetch_rankings(file_name=f"rankings_{str(current_date)}.pkl")
-rankings_df = load_pickle(file_name=f"rankings_{str(current_date)}.pkl")
-pass
-
-
-# Display download buttons in sidebar.
-@st.cache
-def convert_df(df):
-    return df.to_csv().encode("utf-8")
-
-
-tournaments_csv = convert_df(tournaments_df)
 st.sidebar.download_button(
     label="Download raw tournament data as CSV",
-    data=tournaments_csv,
+    data=convert_df_to_csv(tournaments_df),
     file_name=f"tournaments_{str(current_date)}.csv",
     mime="text/csv",
 )
-matches_csv = convert_df(matches_df)
 st.sidebar.download_button(
     label="Download raw match data as CSV",
-    data=matches_csv,
+    data=convert_df_to_csv(matches_df),
     file_name=f"matches_{str(current_date)}.csv",
     mime="text/csv",
 )
 
-
-# Tournament data preprocessing.
-start_dates = pd.to_datetime(tournaments_filtered["StartDate"].values.tolist())
-covid = []
-for start_date in start_dates:
-    if start_date < pd.to_datetime("2020-03-01"):
-        covid.append("pre")
-    else:
-        covid.append("post")
-tournaments_filtered["covid"] = covid
-tournaments_filtered["StartDateTimeStamp"] = pd.to_datetime(
-    tournaments_filtered["StartDate"]
-)
-tournaments_filtered["StartDateTimeStamp"] = tournaments_filtered[
-    "StartDateTimeStamp"
-].map(dt.datetime.toordinal)
 header_container.info(
-    f"Tournament data covers {len(tournaments_filtered)} tournaments starting from {str(tournaments_df['StartDatePandas'].min().date())} and ending in {str(tournaments_df['StartDatePandas'].max().date())}."
-)
-
-
-# Match data preprocessing.
-matches_df["MatchDatePandas"] = pd.to_datetime(matches_df["MatchDate"])
-matches_df["Game1"] = (matches_df["wset1"] + matches_df["oset1"]).fillna(0)
-matches_df["Game2"] = (matches_df["wset2"] + matches_df["oset2"]).fillna(0)
-matches_df["Game3"] = (matches_df["wset3"] + matches_df["oset3"]).fillna(0)
-matches_df["Game4"] = (matches_df["wset4"] + matches_df["oset4"]).fillna(0)
-matches_df["Game5"] = (matches_df["wset5"] + matches_df["oset5"]).fillna(0)
-matches_df["NumberOfGames"] = (
-    (matches_df[["Game1", "Game2", "Game3", "Game4", "Game5"]] != 0)
-    .astype(int)
-    .sum(axis=1)
-)
-matches_df["Game1DurationSecs"] = pd.to_datetime(
-    matches_df["gameDuration1"]
-) - dt.datetime.fromtimestamp(0, pytz.utc)
-matches_df["Game2DurationSecs"] = pd.to_datetime(
-    matches_df["gameDuration2"]
-) - dt.datetime.fromtimestamp(0, pytz.utc)
-matches_df["Game3DurationSecs"] = pd.to_datetime(
-    matches_df["gameDuration3"]
-) - dt.datetime.fromtimestamp(0, pytz.utc)
-matches_df["Game4DurationSecs"] = pd.to_datetime(
-    matches_df["gameDuration4"]
-) - dt.datetime.fromtimestamp(0, pytz.utc)
-matches_df["Game5DurationSecs"] = pd.to_datetime(
-    matches_df["gameDuration5"]
-) - dt.datetime.fromtimestamp(0, pytz.utc)
-matches_df["MatchDuration"] = pd.to_datetime(matches_df["matchEnd"]) - pd.to_datetime(
-    matches_df["matchStart"]
-)
-matches_df = matches_df.loc[matches_df["MatchDuration"] < pd.Timedelta(2, "h")]
-matches_df = matches_df.loc[matches_df["MatchDuration"] > pd.Timedelta(4, "m")]
-matches_df["MatchDuration"] = matches_df["MatchDuration"].astype("timedelta64[m]")
-matches_df["Rallies"] = (
-    matches_df[
-        [
-            "wset1",
-            "oset1",
-            "wset2",
-            "oset2",
-            "wset3",
-            "oset3",
-            "wset4",
-            "oset4",
-            "wset5",
-            "oset5",
-        ]
-    ]
-    .dropna()
-    .sum(axis=1)
-)
-matches_df = matches_df.loc[
-    (matches_df["matchid"] > 1000000) & (matches_df["Rallies"] > 20)
-]
-matches_df["WinnerPlayer"] = (
-    matches_df["vPlayerName"]
-    .loc[matches_df["Winner"] == "V"]
-    .dropna()
-    .combine_first(matches_df["hPlayerName"].loc[matches_df["Winner"] == "H"].dropna())
-)
-matches_df["LoserPlayer"] = (
-    matches_df["vPlayerName"]
-    .loc[matches_df["Winner"] == "H"]
-    .dropna()
-    .combine_first(matches_df["hPlayerName"].loc[matches_df["Winner"] == "V"].dropna())
+    f"Tournament data covers {len(tournaments_df)} tournaments starting from {str(tournaments_df['StartDatePandas'].min().date())} and ending in {str(tournaments_df['StartDatePandas'].max().date())}."
 )
 header_container.info(
     f"Match data covers {len(matches_df)} matches starting from {str(matches_df['MatchDatePandas'].min().date())} and ending in {str(matches_df['MatchDatePandas'].max().date())}."
 )
 
 header_container.markdown("---")
-
 
 tournament_container = st.container()
 
@@ -217,21 +95,21 @@ tournament_container.write(
 fig, ax = plt.subplots()
 fig.tight_layout()
 sn.scatterplot(
-    data=tournaments_filtered.sort_values("StartDatePandas"),
+    data=tournaments_df.sort_values("StartDatePandas"),
     x="StartDateTimeStamp",
     y="NumPlayers",
     hue="covid",
     palette=[custom_palette[0], custom_palette[-1]],
 )
 sn.regplot(
-    data=tournaments_filtered.sort_values("StartDatePandas"),
+    data=tournaments_df.sort_values("StartDatePandas"),
     x="StartDateTimeStamp",
     y="NumPlayers",
     scatter=False,
     order=3,
 )
 sn.regplot(
-    data=tournaments_filtered.loc[tournaments_filtered["covid"] == "pre"].sort_values(
+    data=tournaments_df.loc[tournaments_df["covid"] == "pre"].sort_values(
         "StartDatePandas"
     ),
     x="StartDateTimeStamp",
@@ -326,12 +204,10 @@ match_container.markdown("---")
 match_container.write("### Match length visualization for a selected tournament")
 selected_tournament = match_container.selectbox(
     "Select the tournament name",
-    tournaments_filtered["TournamentName"].loc[
-        tournaments_filtered["Type"] == "results"
-    ],
+    tournaments_df["TournamentName"].loc[tournaments_df["Type"] == "results"],
 )
-selected_tournament_id = tournaments_filtered.loc[
-    tournaments_filtered["TournamentName"] == selected_tournament
+selected_tournament_id = tournaments_df.loc[
+    tournaments_df["TournamentName"] == selected_tournament
 ]["TournamentID"].values[0]
 selected_matches = matches_df.loc[matches_df["TournamentID"] == selected_tournament_id]
 match_container.write(
@@ -363,14 +239,13 @@ match_container.markdown("---")
 player_container = st.container()
 
 player_container.write("### Individual player statistics based on tournament data")
-matches_df_dropna = matches_df.dropna(subset=["vPlayerName", "hPlayerName"])
 unique_player_names = np.sort(
-    pd.unique(matches_df_dropna[["vPlayerName", "hPlayerName"]].values.ravel("K"))
+    pd.unique(matches_df[["vPlayerName", "hPlayerName"]].values.ravel("K"))
 )
 name = player_container.selectbox("Select a player", unique_player_names)
-search_results = matches_df_dropna.loc[
-    matches_df_dropna["vPlayerName"].str.contains(name, case=False)
-    | matches_df_dropna["hPlayerName"].str.contains(name, case=False)
+search_results = matches_df.loc[
+    matches_df["vPlayerName"].str.contains(name, case=False)
+    | matches_df["hPlayerName"].str.contains(name, case=False)
 ]
 search_results["Win"] = search_results["WinnerPlayer"] == name
 search_results = search_results.sort_values(by=["matchid"], ascending=False)
@@ -452,3 +327,33 @@ sn.scatterplot(
 )
 ax.set_xlim(start_xlim, end_xlim)
 demographics_container.pyplot(fig)
+
+demographics_container.markdown("---")
+
+
+new_container = st.container()
+new_container.write("### Matches played over different months")
+fig, ax = plt.subplots()
+
+matches_months_weeks = (
+    matches_df.groupby(by=["Month", "Weekday"])
+    .count()[["MatchDuration"]]
+    .reset_index()
+    .pivot("Weekday", "Month", "MatchDuration")
+    .fillna(0)
+    .astype(int)
+)
+
+sn.heatmap(
+    matches_months_weeks,
+    linewidths=1,
+    cmap="YlGn",
+    linecolor="white",
+    square=True,
+    annot=True,
+    fmt="d",
+)
+new_container.pyplot(fig)
+
+profiler.stop()
+profiler.print()

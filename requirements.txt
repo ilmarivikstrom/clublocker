@@ -8,3 +8,5 @@ scipy
 seaborn
 streamlit
 wheel
+graphviz
+pyinstrument
