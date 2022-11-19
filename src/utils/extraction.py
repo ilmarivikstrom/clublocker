@@ -32,7 +32,6 @@ def load_tournaments():
     return tournaments_df
 
 
-@st.experimental_memo
 def load_matches(tournaments_df):
     # Fetch and save tournament matches, if needed.
     current_date = dt.datetime.now().date()
