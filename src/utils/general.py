@@ -17,6 +17,9 @@ def add_bg_from_local(image_file):
         background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
         background-size: cover
     }}
+    img {{
+        border-radius: 15px;
+    }}
     </style>
     """,
     unsafe_allow_html=True
