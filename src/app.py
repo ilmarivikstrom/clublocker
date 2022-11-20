@@ -10,8 +10,9 @@ import pandas as pd
 import seaborn as sn
 import streamlit as st
 from utils.extraction import load_tournaments, load_matches, load_rankings
-from utils.general import convert_df_to_csv
+from utils.general import add_bg_from_local, convert_df_to_csv
 from pyinstrument import Profiler
+
 
 profiler = Profiler()
 profiler.start()
@@ -24,10 +25,20 @@ st.set_page_config(
     page_icon="res/nikkiboxi.png",
     layout="centered",
     initial_sidebar_state="collapsed",
-    menu_items={},
+    menu_items={}
 )
-theme = "ggplot"
-plt.style.use(theme)
+
+
+add_bg_from_local("res/squash_wall_dark95_blur3.jpg")
+
+
+
+
+
+
+
+
+plt.style.use("ggplot")
 colors = ["#BC9343", "#9B7A35", "#5D4B22", "#020202", "#E3021A"]
 custom_palette_cmap = sn.blend_palette(
     colors=[
@@ -49,7 +60,6 @@ custom_palette = sn.blend_palette(
 )
 current_date = dt.datetime.now().date()
 
-
 # Page header.
 header_container = st.container()
 header_container.image("res/legacy.png")
@@ -60,6 +70,7 @@ tournaments_df = load_tournaments()
 matches_df = load_matches(tournaments_df)
 rankings_df = load_rankings()
 
+st.sidebar.image("res/legacy.png")
 st.sidebar.download_button(
     label="Download raw tournament data as CSV",
     data=convert_df_to_csv(tournaments_df),
@@ -81,6 +92,7 @@ header_container.info(
 )
 
 header_container.markdown("---")
+
 
 tournament_container = st.container()
 
@@ -236,6 +248,12 @@ match_container.pyplot(fig)
 match_container.markdown("---")
 
 
+player_activity_container = st.container()
+player_activity_container.write("### Player activity analysis")
+player_activity_container.write("The most active players")
+player_activity_container.markdown("---")
+
+
 player_container = st.container()
 
 player_container.write("### Individual player statistics based on tournament data")
@@ -361,6 +379,7 @@ sn.heatmap(
     fmt="d",
 )
 new_container.pyplot(fig)
+
 
 profiler.stop()
 profiler.print()
