@@ -17,6 +17,13 @@ def add_bg_from_local(image_file):
         background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
         background-size: cover
     }}
+    [data-testid="stHeader"] {{
+        background-color: rgba(0, 0, 0, 0);
+    }}
+    [data-testid="stSidebar"] {{
+        background: #232526;
+        background: linear-gradient(to up, #414345, #232526);
+    }}
     img {{
         border-radius: 15px;
     }}
