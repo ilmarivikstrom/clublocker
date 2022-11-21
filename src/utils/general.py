@@ -24,6 +24,9 @@ def add_bg_from_local(image_file):
         background: #232526;
         background: linear-gradient(to up, #414345, #232526);
     }}
+    .block-container {{
+        max-width: 60rem;
+    }}
     img {{
         border-radius: 15px;
     }}
