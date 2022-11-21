@@ -21,7 +21,7 @@ profiler.start()
 # Basic configurations.
 pd.options.mode.chained_assignment = None  # default='warn'
 st.set_page_config(
-    page_title="Club Locker Analytics",
+    page_title="Club Locker Data Analysis",
     page_icon="res/nikkiboxi.png",
     layout="centered",
     initial_sidebar_state="collapsed",
@@ -63,8 +63,8 @@ current_date = dt.datetime.now().date()
 # Page header.
 header_container = st.container()
 header_container.image("res/legacy.png")
-header_container.caption("github.com/ilmarivikstrom/clublocker")
-header_container.write("# Club Locker EDA")
+header_container.markdown("> [github.com/ilmarivikstrom/clublocker](https://github.com/ilmarivikstrom/clublocker)")
+header_container.markdown("# Squash Finland Club Locker Data Analysis")
 
 tournaments_df = load_tournaments()
 matches_df = load_matches(tournaments_df)
@@ -90,18 +90,21 @@ header_container.info(
 header_container.info(
     f"Match data covers {len(matches_df)} matches starting from {str(matches_df['MatchDatePandas'].min().date())} and ending in {str(matches_df['MatchDatePandas'].max().date())}."
 )
+header_container.info(
+    f"Only tournament matches are included. League matches are not included in the analysis."
+)
 
 header_container.markdown("---")
 
 
 tournament_container = st.container()
 
-tournament_container.write("## Tournament data")
-tournament_container.write(
-    "Data includes all tournaments that are (publicly) visible in Club Locker history of Finnish Squash Association. For clarity, all canceled tournaments are excluded from the dataset."
+tournament_container.markdown("## Tournament data")
+tournament_container.markdown(
+    "The data includes all tournaments that are (publicly) visible in Club Locker history of Finnish Squash Association. For clarity, all canceled tournaments are excluded from the dataset."
 )
-tournament_container.write("### Participation over time")
-tournament_container.write(
+tournament_container.markdown("### Participation over time")
+tournament_container.markdown(
     "Let's examine the general tournament participation over time:"
 )
 fig, ax = plt.subplots()
@@ -139,7 +142,7 @@ ax.set_xticklabels(xticks_dates)
 for label in ax.get_xticklabels(which="major"):
     label.set(rotation=30, horizontalalignment="center", fontsize=8)
 tournament_container.pyplot(fig)
-tournament_container.write(
+tournament_container.markdown(
     "Data seems to suggest that a decreasing trend in tournament participation was in place already during pre-covid era. This is indicated by the slowly decreasing blue line. Summer breaks and lockdown periods are visible as temporal gaps in the data."
 )
 
@@ -149,15 +152,15 @@ tournament_container.markdown("---")
 
 match_container = st.container()
 
-match_container.write("## Match data")
-match_container.write(
+match_container.markdown("## Match data")
+match_container.markdown(
     "Match data includes only matches played in tournaments. League matches are not included in the data yet."
 )
-match_container.write("### Match length distribution")
-match_container.write(
+match_container.markdown("### Match length distribution")
+match_container.markdown(
     "It is expected that the number of rallies per match is not distributed in a Gaussian manner. This is assumed because the number of games in each match vary between 3 and 5. Each additional game adds a minimum of 11 points to the total number of rallies per match."
 )
-match_container.write("Let's see what the distribution looks like:")
+match_container.markdown("Let's see what the distribution looks like:")
 fig, ax = plt.subplots()
 fig.tight_layout()
 ax.set_xlabel("Number of rallies")
@@ -176,7 +179,7 @@ sn.kdeplot(
 match_container.pyplot(fig)
 
 
-match_container.write(
+match_container.markdown(
     "Let's also see how the number of rallies correlate with the match length in minutes:"
 )
 fig, ax = plt.subplots()
@@ -194,7 +197,7 @@ g.set(xlim=(0, 90))
 match_container.pyplot(fig)
 
 
-match_container.write("Finally, here's a distribution view of the same phenomena:")
+match_container.markdown("Finally, here's a distribution view of the same phenomena:")
 fig, ax = plt.subplots()
 fig.tight_layout()
 g = sn.kdeplot(
@@ -213,7 +216,7 @@ match_container.pyplot(fig)
 match_container.markdown("---")
 
 
-match_container.write("### Match length visualization for a selected tournament")
+match_container.markdown("### Match length visualization for a selected tournament")
 selected_tournament = match_container.selectbox(
     "Select the tournament name",
     tournaments_df["TournamentName"].loc[tournaments_df["Type"] == "results"],
@@ -222,7 +225,7 @@ selected_tournament_id = tournaments_df.loc[
     tournaments_df["TournamentName"] == selected_tournament
 ]["TournamentID"].values[0]
 selected_matches = matches_df.loc[matches_df["TournamentID"] == selected_tournament_id]
-match_container.write(
+match_container.markdown(
     f"Selected {len(selected_matches)} matches from {selected_tournament}"
 )
 fig, ax = plt.subplots()
@@ -249,14 +252,14 @@ match_container.markdown("---")
 
 
 player_activity_container = st.container()
-player_activity_container.write("### Player activity analysis")
-player_activity_container.write("The most active players")
+player_activity_container.markdown("### Player activity analysis")
+player_activity_container.markdown("The most active players")
 player_activity_container.markdown("---")
 
 
 player_container = st.container()
 
-player_container.write("### Individual player statistics based on tournament data")
+player_container.markdown("### Individual player statistics based on tournament data")
 unique_player_names = np.sort(
     pd.unique(matches_df[["vPlayerName", "hPlayerName"]].values.ravel("K"))
 )
@@ -267,7 +270,7 @@ search_results = matches_df.loc[
 ]
 search_results["Win"] = search_results["WinnerPlayer"] == name
 search_results = search_results.sort_values(by=["matchid"], ascending=False)
-player_container.write("Here's a tabular view of the selected player:")
+player_container.markdown("Here's a tabular view of the selected player:")
 player_container.dataframe(
     search_results[
         ["matchid", "hPlayerName", "vPlayerName", "Score_Short", "Winner", "Rallies"]
@@ -276,7 +279,7 @@ player_container.dataframe(
 player_container.caption(f"Found {len(search_results)} matches for player {name}")
 
 
-player_container.write(
+player_container.markdown(
     "And here's the visualization of wins and losses of the selected player's matches:"
 )
 fig, ax = plt.subplots()
@@ -303,8 +306,8 @@ player_container.markdown("---")
 
 demographics_container = st.container()
 
-demographics_container.write("### Player demographics")
-demographics_container.write("Age breakdown")
+demographics_container.markdown("### Player demographics")
+demographics_container.markdown("Age breakdown")
 fig, ax = plt.subplots()
 multiple_type = demographics_container.radio("Chart type", ("Blended", "Stacked"))
 if multiple_type == "Stacked":
@@ -326,7 +329,7 @@ ax.set_xlabel("Player age")
 demographics_container.pyplot(fig)
 
 
-demographics_container.write("Ranking as a function of age")
+demographics_container.markdown("Ranking as a function of age")
 divisions = demographics_container.multiselect(
     "Filter players by division", ["All Men", "All Women"], ["All Men", "All Women"]
 )
@@ -349,7 +352,7 @@ demographics_container.pyplot(fig)
 demographics_container.markdown("---")
 
 new_container = st.container()
-new_container.write("### Matches played in tournaments over years and months")
+new_container.markdown("### Matches played in tournaments over years and months")
 fig, ax = plt.subplots()
 
 tournaments_months_weeks = (
