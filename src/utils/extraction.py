@@ -1,14 +1,15 @@
 import datetime as dt
 import json
 from os import path
+
 import pandas as pd
+import pytz
 import requests
 import streamlit as st
-import pytz
 
 
 @st.experimental_memo
-def load_tournaments():
+def load_tournaments() -> pd.DataFrame:
     # Fetch and save tournaments, if needed.
     current_date = dt.datetime.now().date()
     if not path.exists(f"data/tournaments_{str(current_date)}.pkl"):
@@ -32,7 +33,7 @@ def load_tournaments():
     return tournaments_df
 
 
-def load_matches(tournaments_df):
+def load_matches(tournaments_df: pd.DataFrame) -> pd.DataFrame:
     # Fetch and save tournament matches, if needed.
     current_date = dt.datetime.now().date()
     if not path.exists(f"data/matches_{str(current_date)}.pkl"):
@@ -47,8 +48,7 @@ def load_matches(tournaments_df):
     return matches_df
 
 
-@st.experimental_memo
-def load_rankings():
+def load_rankings() -> pd.DataFrame:
     # Fetch and save ranking data, if needed.
     current_date = dt.datetime.now().date()
     if not path.exists(f"data/rankings_{str(current_date)}.pkl"):
@@ -59,8 +59,7 @@ def load_rankings():
     return rankings_df
 
 
-@st.experimental_memo
-def _preprocess_tournaments(tournaments_df_dirty):
+def _preprocess_tournaments(tournaments_df_dirty: pd.DataFrame) -> pd.DataFrame:
     # Tournament data preprocessing.
     start_dates = pd.to_datetime(tournaments_df_dirty["StartDate"].values.tolist())
     covid = []
@@ -93,7 +92,7 @@ def _preprocess_tournaments(tournaments_df_dirty):
 
 
 @st.experimental_memo
-def _preprocess_rankings(rankings_df_dirty):
+def _preprocess_rankings(rankings_df_dirty: pd.DataFrame) -> pd.DataFrame:
     rankings_df = rankings_df_dirty
     return rankings_df
 
@@ -168,7 +167,10 @@ def _preprocess_matches(matches_df_dirty):
         .sum(axis=1)
     )
     matches_df_dirty = matches_df_dirty.loc[
-        (matches_df_dirty["matchid"] > 1000000) & (matches_df_dirty["Rallies"] > 20)
+        (matches_df_dirty["matchid"] > 1000000)
+        & (matches_df_dirty["Rallies"] > 20)
+        & (matches_df_dirty["NumberOfGames"] >= 3)
+        & (matches_df_dirty["NumberOfGames"] <= 5)
     ]
     matches_df_dirty["WinnerPlayer"] = (
         matches_df_dirty["vPlayerName"]
@@ -201,75 +203,89 @@ def _preprocess_matches(matches_df_dirty):
     return matches_df
 
 
-def _fetch_and_save_tournaments(file_name):
+def _fetch_and_save_tournaments(file_name: str) -> None:
+    tournaments_list = []
     tournament_types = {"scheduled": 1, "results": 3}
-    tournaments = []
-    for tournament_type in tournament_types:
-        response = requests.get(
-            url=f"https://api.ussquash.com/resources/tournaments?TopRecords=500&ngbId=10142&OrganizerType=1&Sanctioned=1&Status={tournament_types[tournament_type]}"
-        )
-        js = json.loads(response.content)
-        for tournament in js:
-            tournament["Type"] = tournament_type
-            tournaments.append(tournament)
-    tournaments_df = pd.DataFrame(tournaments, columns=tournaments[0].keys())
+    for tournament_type in tournament_types.items():
+        try:
+            response = requests.get(
+                url=f"https://api.ussquash.com/resources/tournaments?TopRecords=500&ngbId=10142&OrganizerType=1&Sanctioned=1&Status={tournament_type[1]}",
+                timeout=10,
+            )
+            tournaments_js = json.loads(response.content)
+            for tournament_js in tournaments_js:
+                tournament_js["Type"] = tournament_type[0]
+                tournaments_list.append(tournament_js)
+        except requests.exceptions.Timeout:
+            print("TODO: Handle timeout better.")
+    tournaments_df = pd.DataFrame(tournaments_list, columns=tournaments_list[0].keys())
     tournaments_df.to_pickle(f"data/{file_name}")
 
 
-def _fetch_and_save_tournament_matches(tournaments_df, file_name):
-    # Only take matches from tournaments that have passed.
-    # results_df = tournaments_df.loc[tournaments_df['Type'] == 'results']
+def _fetch_and_save_tournament_matches(
+    tournaments_df: pd.DataFrame, file_name: str
+) -> None:
     results_df = tournaments_df
-    tournament_ids = results_df["TournamentID"].values.tolist()
-    tournament_start_dates = results_df["StartDate"].values.tolist()
-    tournament_end_dates = results_df["EndDate"].values.tolist()
-    dates_ids = list(zip(tournament_ids, tournament_start_dates, tournament_end_dates))
-    matches_js = []
+    dates_ids = list(
+        zip(
+            results_df["TournamentID"].values.tolist(),
+            results_df["StartDate"].values.tolist(),
+            results_df["EndDate"].values.tolist(),
+        )
+    )
+    matches_list = []
     index = 0
-    bar = st.progress(0)
+    progress_bar = st.progress(0)
     for tournament in dates_ids:
         date_range_list = [
             str(x.date()) for x in pd.date_range(tournament[1], tournament[2])
         ]
         for date in date_range_list:
-            response = requests.get(
-                url=f"https://api.ussquash.com/resources/res/trn/live_matrix?date={date}&tournamentId={tournament[0]}"
-            )
-            js = json.loads(response.content)
-            for entry in js:
-                if len(entry) > 1:
-                    entry["TournamentID"] = tournament[0]
-                    matches_js.append(entry)
+            try:
+                response = requests.get(
+                    url=f"https://api.ussquash.com/resources/res/trn/live_matrix?date={date}&tournamentId={tournament[0]}",
+                    timeout=10,
+                )
+                matches_js = json.loads(response.content)
+                for match_js in matches_js:
+                    if len(match_js) > 1:
+                        match_js["TournamentID"] = tournament[0]
+                        matches_list.append(match_js)
+            except requests.exceptions.Timeout:
+                print("TODO: Handle timeout better.")
         print(
-            f"Fetched matches from tournament {tournament[0]}. Total matches loaded: {len(matches_js)}"
+            f"Fetched matches from tournament {tournament[0]}. Total matches loaded: {len(matches_list)}"
         )
         index += 1
-        bar.progress(index / len(dates_ids))
-    matches_df_dirty = pd.DataFrame(matches_js, columns=matches_js[0].keys())
+        progress_bar.progress(index / len(dates_ids))
+    matches_df_dirty = pd.DataFrame(matches_list, columns=matches_list[0].keys())
     matches_df_dirty = matches_df_dirty.drop_duplicates(subset="matchid", keep="first")
     matches_df_dirty.to_pickle(f"data/{file_name}")
 
 
-def _fetch_and_save_rankings(file_name):
+def _fetch_and_save_rankings(file_name: str) -> None:
     ranking_urls = [
         "https://api.ussquash.com/resources/rankings/9/current?divisions=2",
         "https://api.ussquash.com/resources/rankings/9/current?divisions=1",
     ]
-    rankings = []
+    rankings_list = []
     for ranking_url in ranking_urls:
         for page_number in range(1, 20):
             ranking_url_with_page_number = ranking_url + f"&pageNumber={page_number}"
-            response = requests.get(ranking_url_with_page_number)
-            js = json.loads(response.content)
-            if len(js) == 0:
-                break
-            for entry in js:
-                rankings.append(entry)
-    rankings_df = pd.DataFrame(rankings, columns=rankings[0].keys())
+            try:
+                response = requests.get(url=ranking_url_with_page_number, timeout=10)
+                rankings_js = json.loads(response.content)
+                if len(rankings_js) == 0:
+                    break
+                for ranking_js in rankings_js:
+                    rankings_list.append(ranking_js)
+            except requests.exceptions.Timeout:
+                print("TODO: Handle timeout better.")
+    rankings_df = pd.DataFrame(rankings_list, columns=rankings_list[0].keys())
     rankings_df.to_pickle(f"data/{file_name}")
 
 
 @st.experimental_memo
-def _load_pickle(file_name):
+def _load_pickle(file_name: str) -> pd.DataFrame:
     pickle = pd.read_pickle(f"data/{file_name}")
     return pickle
