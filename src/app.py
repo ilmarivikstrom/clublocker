@@ -8,8 +8,8 @@ import seaborn as sn
 import streamlit as st
 from pyinstrument import Profiler
 
-from src.utils.extraction import load_matches, load_rankings, load_tournaments
-from src.utils.general import add_bg_from_local, convert_df_to_csv
+from utils.extraction import load_matches, load_rankings, load_tournaments
+from utils.general import add_bg_from_local, convert_df_to_csv
 
 profiler = Profiler()
 profiler.start()
