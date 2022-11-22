@@ -25,9 +25,7 @@ st.set_page_config(
     menu_items={},
 )
 
-
 add_bg_from_local("res/squash_wall_dark95_blur3.jpg")
-
 
 plt.style.use("ggplot")
 colors = ["#BC9343", "#9B7A35", "#5D4B22", "#020202", "#E3021A"]
@@ -45,6 +43,26 @@ custom_palette = sn.blend_palette(
         (0.737, 0.573, 0.26, 1),
         (0.89, 0.00, 0.102, 1),
         (0.0008, 0.0008, 0.0008, 1),
+    ],
+    n_colors=100,
+    as_cmap=False,
+)
+custom_palette1 = sn.blend_palette(
+    colors=[
+        (0.945, 0.933, 0.914, 1),
+        (0.737, 0.573, 0.26, 1),
+        (0.89, 0.00, 0.102, 1),
+        (0.0008, 0.0008, 0.0008, 1),
+    ],
+    n_colors=100,
+    as_cmap=False,
+)
+custom_palette1_inv = sn.blend_palette(
+    colors=[
+        (0.0008, 0.0008, 0.0008, 1),
+        (0.89, 0.00, 0.102, 1),
+        (0.737, 0.573, 0.26, 1),
+        (0.945, 0.933, 0.914, 1),
     ],
     n_colors=100,
     as_cmap=False,
@@ -255,8 +273,69 @@ match_container.markdown("---")
 
 
 player_activity_container = st.container()
+fig, ax = plt.subplots()
 player_activity_container.markdown("### Player activity analysis")
+unique_player_names = list(
+    set(matches_df["WinnerPlayer"].values.tolist())
+    | set(matches_df["LoserPlayer"].values.tolist())
+)
+# Most common matchups: matches_df.groupby(by=["WinnerPlayer", "LoserPlayer"]).count().sort_values(by="matchid", ascending=False).head(20)
+# Most active from losers: matches_df.groupby(by=["LoserPlayer"]).count().sort_values(by="matchid", ascending=False)
+# Most active from winners: matches_df.groupby(by=["WinnerPlayer"]).count().sort_values(by="matchid", ascending=False)
+active_players_df = (
+    pd.concat(
+        [
+            matches_df.groupby(by=["LoserPlayer"]).count().reset_index(names="Player"),
+            matches_df.groupby(by=["WinnerPlayer"]).count().reset_index(names="Player"),
+        ]
+    )
+    .groupby(by="Player")
+    .sum()
+    .sort_values(by="matchid", ascending=False)
+    .reset_index()[["Player", "WinnerPlayer", "LoserPlayer"]]
+)
+active_players_df["TotalMatches"] = (
+    active_players_df["WinnerPlayer"] + active_players_df["LoserPlayer"]
+)
+active_players_df[["WinnerPlayer", "LoserPlayer"]] = active_players_df[
+    ["LoserPlayer", "WinnerPlayer"]
+]
+
+show_results = 15
+sn.barplot(
+    data=active_players_df.head(show_results),
+    x="TotalMatches",
+    y="Player",
+    palette=sn.color_palette("husl", show_results * 20),
+)
+ax.set_xlabel("Number of matches played")
+ax.set_ylabel("Player name")
+
 player_activity_container.markdown("WIP")
+player_activity_container.pyplot(fig)
+
+
+player_activity_container.markdown("The most common matchups")
+fig, ax = plt.subplots()
+common_matchups_df = (
+    matches_df.groupby(by=["WinnerPlayer", "LoserPlayer"])
+    .count()
+    .sort_values(by="matchid", ascending=False)
+    .reset_index(names=["Player1", "Player2"])[["Player1", "Player2", "matchid"]]
+)
+common_matchups_df["Matchup"] = common_matchups_df["Player1"].str.cat(
+    common_matchups_df["Player2"], sep=" vs. "
+)
+sn.barplot(
+    data=common_matchups_df.head(show_results),
+    x="matchid",
+    y="Matchup",
+    palette=sn.color_palette("husl", show_results * 20),
+)
+ax.set_xlabel("Number of matchups")
+ax.set_ylabel("Players")
+player_activity_container.pyplot(fig)
+
 player_activity_container.markdown("---")
 
 
@@ -309,7 +388,7 @@ demographics_container = st.container()
 
 demographics_container.markdown("### Player demographics")
 demographics_container.markdown("Age breakdown")
-MULTIPLE_TYPE = demographics_container.radio("Chart type", ("Blended", "Stacked"))
+MULTIPLE_TYPE = demographics_container.radio("Chart type", ("Stacked", "Blended"))
 if MULTIPLE_TYPE == "Stacked":
     MULTIPLE_TYPE = "stack"
 else:
@@ -357,7 +436,7 @@ demographics_container.pyplot(fig)
 demographics_container.markdown("---")
 
 new_container = st.container()
-new_container.markdown("### Matches played in tournaments over years and months")
+new_container.markdown("### Tournament matches played over years and months")
 fig, ax = plt.subplots()
 
 tournaments_months_weeks = (
@@ -385,6 +464,7 @@ sn.heatmap(
     linecolor="white",
     square=False,
     fmt="d",
+    annot=True
 )
 new_container.pyplot(fig)
 
