@@ -10,13 +10,13 @@ from pyinstrument import Profiler
 
 from utils.extraction import load_matches, load_rankings, load_tournaments
 from utils.general import add_bg_from_local, convert_df_to_csv
+from utils.styles import *
 
 profiler = Profiler()
 profiler.start()
 
-
-# Basic configurations.
-pd.options.mode.chained_assignment = None  # default='warn'
+# Basic configurations
+pd.options.mode.chained_assignment = None
 st.set_page_config(
     page_title="Club Locker Data Analysis",
     page_icon="res/nikkiboxi.png",
@@ -24,92 +24,27 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
     menu_items={},
 )
-
 add_bg_from_local("res/squash_wall_dark95_blur3.jpg")
-
 plt.style.use("ggplot")
-colors = ["#BC9343", "#9B7A35", "#5D4B22", "#020202", "#E3021A"]
-custom_palette_cmap = sn.blend_palette(
-    colors=[
-        (0.737, 0.573, 0.26, 1),
-        (0.89, 0.00, 0.102, 1),
-        (0.0008, 0.0008, 0.0008, 1),
-    ],
-    n_colors=100,
-    as_cmap=True,
-)
-custom_palette = sn.blend_palette(
-    colors=[
-        (0.737, 0.573, 0.26, 1),
-        (0.89, 0.00, 0.102, 1),
-        (0.0008, 0.0008, 0.0008, 1),
-    ],
-    n_colors=100,
-    as_cmap=False,
-)
-custom_palette1 = sn.blend_palette(
-    colors=[
-        (0.945, 0.933, 0.914, 1),
-        (0.737, 0.573, 0.26, 1),
-        (0.89, 0.00, 0.102, 1),
-        (0.0008, 0.0008, 0.0008, 1),
-    ],
-    n_colors=100,
-    as_cmap=False,
-)
-custom_palette1_inv = sn.blend_palette(
-    colors=[
-        (0.0008, 0.0008, 0.0008, 1),
-        (0.89, 0.00, 0.102, 1),
-        (0.737, 0.573, 0.26, 1),
-        (0.945, 0.933, 0.914, 1),
-    ],
-    n_colors=100,
-    as_cmap=False,
-)
-custom_palette_cmap1 = sn.blend_palette(
-    colors=[
-        (0.945, 0.933, 0.914, 1),
-        (0.737, 0.573, 0.26, 1),
-        (0.89, 0.00, 0.102, 1),
-        (0.0008, 0.0008, 0.0008, 1),
-    ],
-    n_colors=100,
-    as_cmap=True,
-)
+
+# Get the starting datetime.
 current_date = dt.datetime.now().date()
 
 # Page header.
 header_container = st.container()
 header_container.image("res/legacy.png")
 header_container.markdown(
-    "> [github.com/ilmarivikstrom/clublocker](https://github.com/ilmarivikstrom/clublocker)"
+    "> Visit [github.com/ilmarivikstrom/clublocker](https://github.com/ilmarivikstrom/clublocker)"
 )
+header_container.markdown(
+    "> Connect on [https://linkedin.com/in/ilmarivikstrom](https://linkedin.com/in/ilmarivikstrom)"
+)
+
 header_container.markdown("# Squash Finland Club Locker Data Analysis")
 
 tournaments_df = load_tournaments()
 matches_df = load_matches(tournaments_df)
 rankings_df = load_rankings()
-
-
-st.sidebar.download_button(
-    label="Download raw tournament data as CSV",
-    data=convert_df_to_csv(tournaments_df),
-    file_name=f"tournaments_{str(current_date)}.csv",
-    mime="text/csv",
-)
-st.sidebar.download_button(
-    label="Download raw match data as CSV",
-    data=convert_df_to_csv(matches_df),
-    file_name=f"matches_{str(current_date)}.csv",
-    mime="text/csv",
-)
-st.sidebar.download_button(
-    label="Download raw ranking data as CSV",
-    data=convert_df_to_csv(rankings_df),
-    file_name=f"rankings_{str(current_date)}.csv",
-    mime="text/csv",
-)
 
 header_container.info(
     f"Tournament data covers **{len(tournaments_df)}** tournaments starting from {str(tournaments_df['StartDatePandas'].min().date())} and ending in {str(tournaments_df['StartDatePandas'].max().date())}. Only tournament matches are included. League matches are not included in the analysis."
@@ -122,6 +57,26 @@ header_container.info(
 )
 
 header_container.markdown("---")
+
+sb_col1, sb_col2, sb_col3 = st.sidebar.columns(3)
+sb_col1.download_button(
+    label="Download tournament data",
+    data=convert_df_to_csv(tournaments_df),
+    file_name=f"tournaments_{str(current_date)}.csv",
+    mime="text/csv",
+)
+sb_col2.download_button(
+    label="Download match data",
+    data=convert_df_to_csv(matches_df),
+    file_name=f"matches_{str(current_date)}.csv",
+    mime="text/csv",
+)
+sb_col3.download_button(
+    label="Download ranking data",
+    data=convert_df_to_csv(rankings_df),
+    file_name=f"rankings_{str(current_date)}.csv",
+    mime="text/csv",
+)
 
 
 tournament_container = st.container()
@@ -141,6 +96,7 @@ sn.scatterplot(
     hue="covid",
     palette=[custom_palette[0], custom_palette[-1]],
 )
+
 sn.regplot(
     data=tournaments_df.sort_values("StartDatePandas"),
     x="StartDateTimeStamp",
@@ -205,7 +161,7 @@ match_container.markdown(
 fig, ax = plt.subplots()
 ax.set_xlabel("Match duration (minutes)")
 ax.set_ylabel("Number of rallies")
-g = sn.scatterplot(
+sn.scatterplot(
     data=matches_df,
     x="MatchDuration",
     y="Rallies",
@@ -215,7 +171,6 @@ g = sn.scatterplot(
     linewidth=0,
 )
 match_container.pyplot(fig)
-
 
 match_container.markdown("Finally, here's a distribution view of the same phenomena:")
 fig, ax = plt.subplots()
@@ -279,9 +234,7 @@ unique_player_names = list(
     set(matches_df["WinnerPlayer"].values.tolist())
     | set(matches_df["LoserPlayer"].values.tolist())
 )
-# Most common matchups: matches_df.groupby(by=["WinnerPlayer", "LoserPlayer"]).count().sort_values(by="matchid", ascending=False).head(20)
-# Most active from losers: matches_df.groupby(by=["LoserPlayer"]).count().sort_values(by="matchid", ascending=False)
-# Most active from winners: matches_df.groupby(by=["WinnerPlayer"]).count().sort_values(by="matchid", ascending=False)
+
 active_players_df = (
     pd.concat(
         [
@@ -385,7 +338,6 @@ player_container.markdown("---")
 
 
 demographics_container = st.container()
-
 demographics_container.markdown("### Player demographics")
 demographics_container.markdown("Age breakdown")
 MULTIPLE_TYPE = demographics_container.radio("Chart type", ("Stacked", "Blended"))
@@ -398,7 +350,7 @@ bin_width = demographics_container.select_slider(
 )
 hack_palette = [custom_palette[0], custom_palette[-1]]
 fig, ax = plt.subplots()
-g = sn.histplot(
+sn.histplot(
     data=rankings_df,
     x="age",
     hue="division",
@@ -406,7 +358,7 @@ g = sn.histplot(
     binwidth=bin_width,
     palette=hack_palette,
 )
-g.set(xlim=(0, 90))
+ax.set_xlim((0, 90))
 ax.set_xlabel("Player age")
 demographics_container.pyplot(fig)
 
@@ -464,7 +416,7 @@ sn.heatmap(
     linecolor="white",
     square=False,
     fmt="d",
-    annot=True
+    annot=True,
 )
 new_container.pyplot(fig)
 
