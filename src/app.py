@@ -305,7 +305,8 @@ player_container.markdown("Here's a tabular view of the selected player:")
 player_container.dataframe(
     search_results[
         ["WinnerPlayer", "LoserPlayer", "Score_Short", "Rallies", "MatchDatePandas"]
-    ]
+    ],
+    use_container_width=True
 )
 player_container.caption(f"Found {len(search_results)} matches for player {name}")
 
