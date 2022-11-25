@@ -105,19 +105,19 @@ def _preprocess_matches(matches_df_dirty):
     matches_df_dirty["MatchDatePandas"] = pd.to_datetime(matches_df_dirty["MatchDate"])
     matches_df_dirty["Game1"] = (
         matches_df_dirty["wset1"] + matches_df_dirty["oset1"]
-    ).fillna(0)
+    ).fillna(0).astype(int)
     matches_df_dirty["Game2"] = (
         matches_df_dirty["wset2"] + matches_df_dirty["oset2"]
-    ).fillna(0)
+    ).fillna(0).astype(int)
     matches_df_dirty["Game3"] = (
         matches_df_dirty["wset3"] + matches_df_dirty["oset3"]
-    ).fillna(0)
+    ).fillna(0).astype(int)
     matches_df_dirty["Game4"] = (
         matches_df_dirty["wset4"] + matches_df_dirty["oset4"]
-    ).fillna(0)
+    ).fillna(0).astype(int)
     matches_df_dirty["Game5"] = (
         matches_df_dirty["wset5"] + matches_df_dirty["oset5"]
-    ).fillna(0)
+    ).fillna(0).astype(int)
     matches_df_dirty["NumberOfGames"] = (
         (matches_df_dirty[["Game1", "Game2", "Game3", "Game4", "Game5"]] != 0)
         .astype(int)
@@ -153,20 +153,16 @@ def _preprocess_matches(matches_df_dirty):
     matches_df_dirty["Rallies"] = (
         matches_df_dirty[
             [
-                "wset1",
-                "oset1",
-                "wset2",
-                "oset2",
-                "wset3",
-                "oset3",
-                "wset4",
-                "oset4",
-                "wset5",
-                "oset5",
+                "Game1",
+                "Game2",
+                "Game3",
+                "Game4",
+                "Game5",
             ]
         ]
         .dropna()
         .sum(axis=1)
+        .astype(int)
     )
     matches_df_dirty = matches_df_dirty.loc[
         (matches_df_dirty["matchid"] > 1000000)
