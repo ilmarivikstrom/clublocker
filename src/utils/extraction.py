@@ -8,7 +8,6 @@ import requests
 import streamlit as st
 
 
-@st.experimental_memo
 def load_tournaments() -> pd.DataFrame:
     # Fetch and save tournaments, if needed.
     current_date = dt.datetime.now().date()
@@ -87,6 +86,7 @@ def _preprocess_tournaments(tournaments_df_dirty: pd.DataFrame) -> pd.DataFrame:
     tournaments_df_dirty["Week"] = [
         x.week for x in tournaments_df_dirty["StartDatePandas"]
     ]
+    tournaments_df_dirty.sort_values(by=["StartDatePandas"], ascending=True, inplace=True)
     tournaments_df = tournaments_df_dirty
     return tournaments_df
 
@@ -100,6 +100,8 @@ def _preprocess_rankings(rankings_df_dirty: pd.DataFrame) -> pd.DataFrame:
 @st.experimental_memo
 def _preprocess_matches(matches_df_dirty):
     # Match data preprocessing.
+    matches_df_dirty["hPlayerName"] = matches_df_dirty["hPlayerName"].str.split(",").str[::-1].str.join(",").str.replace(",", " ")
+    matches_df_dirty["vPlayerName"] = matches_df_dirty["vPlayerName"].str.split(",").str[::-1].str.join(",").str.replace(",", " ")
     matches_df_dirty["MatchDatePandas"] = pd.to_datetime(matches_df_dirty["MatchDate"])
     matches_df_dirty["Game1"] = (
         matches_df_dirty["wset1"] + matches_df_dirty["oset1"]
@@ -199,6 +201,7 @@ def _preprocess_matches(matches_df_dirty):
     matches_df_dirty["Year"] = [x.year for x in matches_df_dirty["MatchDatePandas"]]
     matches_df_dirty["Month"] = [x.month for x in matches_df_dirty["MatchDatePandas"]]
     matches_df_dirty["Week"] = [x.week for x in matches_df_dirty["MatchDatePandas"]]
+    matches_df_dirty.sort_values(by=["MatchDatePandas"], ascending=True, inplace=True)
     matches_df = matches_df_dirty
     return matches_df
 

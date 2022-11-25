@@ -59,20 +59,23 @@ header_container.info(
 header_container.markdown("---")
 
 sb_col1, sb_col2, sb_col3 = st.sidebar.columns(3)
+sb_col1.markdown("### Tournament data")
 sb_col1.download_button(
-    label="Download tournament data",
+    label="⬇️ Download ⬇️",
     data=convert_df_to_csv(tournaments_df),
     file_name=f"tournaments_{str(current_date)}.csv",
     mime="text/csv",
 )
+sb_col2.markdown("### Match data")
 sb_col2.download_button(
-    label="Download match data",
+    label="⬇️ Download ⬇️",
     data=convert_df_to_csv(matches_df),
     file_name=f"matches_{str(current_date)}.csv",
     mime="text/csv",
 )
+sb_col3.markdown("### Ranking data")
 sb_col3.download_button(
-    label="Download ranking data",
+    label="⬇️ Download ⬇️",
     data=convert_df_to_csv(rankings_df),
     file_name=f"rankings_{str(current_date)}.csv",
     mime="text/csv",
@@ -104,15 +107,6 @@ sn.regplot(
     scatter=False,
     order=3,
 )
-sn.regplot(
-    data=tournaments_df.loc[tournaments_df["covid"] == "pre"].sort_values(
-        "StartDatePandas"
-    ),
-    x="StartDateTimeStamp",
-    y="NumPlayers",
-    scatter=False,
-    order=1,
-)
 ax.set_xlabel("Date")
 ax.set_ylabel("Number of players in tournament")
 ax.xaxis.set_major_locator(mdates.YearLocator())
@@ -123,7 +117,9 @@ ax.set_xticklabels(xticks_dates)
 for label in ax.get_xticklabels(which="major"):
     label.set(rotation=30, horizontalalignment="center", fontsize=8)
 tournament_container.pyplot(fig)
-tournament_container.markdown("")
+
+
+tournament_container.dataframe(tournaments_df.sort_values(by=["NumPlayers"], ascending=False).head(10)[["TournamentName", "Year", "Month", "NumPlayers", "covid"]], use_container_width=True)
 
 
 tournament_container.markdown("---")
@@ -308,7 +304,7 @@ search_results = search_results.sort_values(by=["matchid"], ascending=False)
 player_container.markdown("Here's a tabular view of the selected player:")
 player_container.dataframe(
     search_results[
-        ["matchid", "hPlayerName", "vPlayerName", "Score_Short", "Winner", "Rallies"]
+        ["WinnerPlayer", "LoserPlayer", "Score_Short", "Rallies", "MatchDatePandas"]
     ]
 )
 player_container.caption(f"Found {len(search_results)} matches for player {name}")

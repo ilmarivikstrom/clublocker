@@ -38,6 +38,9 @@ def add_bg_from_local(image_file: str) -> None:
     img:hover {{
 	    -webkit-filter: drop-shadow(0px 0px 5px rgba(188, 146, 67, 0.8));
     }}
+    button[title="View fullscreen"] {{
+        display: none;
+    }}
     </style>
     """,
         unsafe_allow_html=True,
