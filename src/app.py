@@ -67,9 +67,9 @@ introduction_container.markdown(
     
     > ***Are we experiencing some kind of a squash renaissance? Are the dark days already behind us?***
     
-    Well, it may still be a bit too early to take the results at face value. Many questions are still begging for an answer. One question is: can we see the growth in competitive squash as well? The study reports did not unfortunately tell us anything new about the state of competitive squash. I have not seen a proper analysis conducted on the open competition data that is available from the past few years. There is no reason why such analysis could not be conducted, because all tournaments, matches, and league activities are publicly available from the Club Locker (CL) service. It is only a matter of someone crunching the numbers.
+    Well, it may still be a bit too early to take the results at face value. Many questions are still begging for an answer. One of these questions is: **can we see the growth in competitive squash as well?** The study reports did not unfortunately teach us anything new about the state of competitive squash. I have not seen a proper analysis conducted on the open competition data that is available from the past few years. There is no reason why such analysis could not be conducted, because all tournaments, matches, and league activities are publicly available from the Club Locker (CL) service. For a while it has been only about someone crunching the numbers.
     
-    I have attempted to showcase the competitive squash data in this analysis. The objectives of the analysis are the following:
+    I have attempted to showcase the competitive squash data in this analysis with the following objectives:
     - present the historical data in an understandable format
     - find patterns and draw insights from the data
     - spread the insights and encourage discussion
