@@ -35,10 +35,10 @@ current_date = dt.datetime.now().date()
 _, header_image_container, _ = st.columns(3)
 header_image_container.image("res/legacy.png", width=300)
 header_text_container = st.container()
-header_text_container.markdown(
+header_text_container.title(
     """
-    # Deep Dive into Competitive Squash in Finland
-"""
+    Deep Dive into Finnish Competitive Squash Data
+    """
 )
 
 author_container = st.container()
@@ -52,11 +52,43 @@ author_container.markdown(
 author_container.markdown("---")
 
 introduction_container = st.container()
-introduction_container.markdown("## Introduction stuff here...")
+introduction_container.markdown(
+    """
+    # Introduction
+    In 2021, [Finnish Squash Association (FSA) reported](https://www.squash.fi/Hallitutkimus+2021) that Finnish squash had experienced significant growth during the past three years. A year later, FSA presented [encouraging study results](https://www.squash.fi/Squashin+kiinnostus+kasvussa) about the perceived interest in squash in Finland.
+    
+    The key results are as follows:
+    - over **500,000** Finnish people are interested in squash
+    - growth of **over 70%** compared to the previous years
+    
+    The growth is visible to any hobbyist looking to book courts. Playing back the previous years, it is evident that squash courts are in higher demand today (Q4/2022) than in recent history. My personal experience suggests that truckloads of newcomers, in particular, are swarming the courts. This phenomenon is clear during primetime hours in Helsinki, at least.
+    
+    #### These results and observations are great news for the sport!
+    
+    > ***Are we experiencing some kind of a squash renaissance? Are the dark days already behind us?***
+    
+    Well, it may still be a bit too early to take the results at face value. Many questions are still begging for an answer. One question is: can we see the growth in competitive squash as well? The study reports did not unfortunately tell us anything new about the state of competitive squash. I have not seen a proper analysis conducted on the open competition data that is available from the past few years. There is no reason why such analysis could not be conducted, because all tournaments, matches, and league activities are publicly available from the Club Locker (CL) service. It is only a matter of someone crunching the numbers.
+    
+    I have attempted to showcase the competitive squash data in this analysis. The objectives of the analysis are the following:
+    - present the historical data in an understandable format
+    - find patterns and draw insights from the data
+    - spread the insights and encourage discussion
+    - take a step towards more data-driven future
+
+    #### Alright, let's dive in!
+    """
+)
 introduction_container.markdown("---")
 
 loading_container = st.container()
-loading_container.markdown("## Loading stuff here...")
+loading_container.markdown(
+    """
+    # Loading and preprocessing the Club Locker data
+    Before any analysis can take place, we need to fetch and preprocess fresh data from the Club Locker service. This happens automatically in the background, so you do not need to do anything.
+
+    You are able to advance in the analysis only after the data has been loaded, so **please hold on tight while we get the things ready for you...**
+    """
+)
 tournaments_df = load_tournaments()
 matches_df = load_matches(tournaments_df)
 rankings_df = load_rankings()
@@ -70,6 +102,7 @@ loading_container.info(
 loading_container.info(
     f"Ranking data covers **{len(rankings_df.loc[rankings_df['division'] == 'All Men'])} men** and **{len(rankings_df.loc[rankings_df['division'] == 'All Women'])} women**."
 )
+loading_container.success("**All data has been fetched. Let's move on**!")
 loading_container.markdown("---")
 
 
@@ -100,9 +133,7 @@ sb_col3.download_button(
 tournament_container = st.container()
 
 tournament_container.markdown("## Tournament data")
-tournament_container.markdown(
-    "The data includes all tournaments that are (publicly) visible in Club Locker history of Finnish Squash Association. For clarity, all canceled tournaments are excluded from the dataset."
-)
+tournament_container.markdown("")
 tournament_container.markdown("### Participation over time")
 tournament_container.markdown("")
 fig, ax = plt.subplots()
@@ -151,7 +182,6 @@ match_container.markdown("## Match data")
 match_container.markdown("")
 match_container.markdown("### Match length distribution")
 match_container.markdown("")
-match_container.markdown("Let's see what the distribution looks like:")
 fig, ax = plt.subplots()
 fig.tight_layout()
 ax.set_xlabel("Number of rallies")
@@ -171,9 +201,7 @@ sn.histplot(
 match_container.pyplot(fig)
 
 
-match_container.markdown(
-    "Let's also see how the number of rallies correlate with the match length in minutes:"
-)
+match_container.markdown("")
 fig, ax = plt.subplots()
 ax.set_xlabel("Match duration (minutes)")
 ax.set_ylabel("Number of rallies")
@@ -188,7 +216,7 @@ sn.scatterplot(
 )
 match_container.pyplot(fig)
 
-match_container.markdown("Finally, here's a distribution view of the same phenomena:")
+match_container.markdown("")
 fig, ax = plt.subplots()
 fig.tight_layout()
 sn.histplot(
