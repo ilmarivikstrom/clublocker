@@ -86,7 +86,9 @@ def _preprocess_tournaments(tournaments_df_dirty: pd.DataFrame) -> pd.DataFrame:
     tournaments_df_dirty["Week"] = [
         x.week for x in tournaments_df_dirty["StartDatePandas"]
     ]
-    tournaments_df_dirty.sort_values(by=["StartDatePandas"], ascending=True, inplace=True)
+    tournaments_df_dirty.sort_values(
+        by=["StartDatePandas"], ascending=True, inplace=True
+    )
     tournaments_df = tournaments_df_dirty
     return tournaments_df
 
@@ -100,24 +102,36 @@ def _preprocess_rankings(rankings_df_dirty: pd.DataFrame) -> pd.DataFrame:
 @st.experimental_memo
 def _preprocess_matches(matches_df_dirty):
     # Match data preprocessing.
-    matches_df_dirty["hPlayerName"] = matches_df_dirty["hPlayerName"].str.split(",").str[::-1].str.join(",").str.replace(",", " ")
-    matches_df_dirty["vPlayerName"] = matches_df_dirty["vPlayerName"].str.split(",").str[::-1].str.join(",").str.replace(",", " ")
+    matches_df_dirty["hPlayerName"] = (
+        matches_df_dirty["hPlayerName"]
+        .str.split(",")
+        .str[::-1]
+        .str.join(",")
+        .str.replace(",", " ")
+    )
+    matches_df_dirty["vPlayerName"] = (
+        matches_df_dirty["vPlayerName"]
+        .str.split(",")
+        .str[::-1]
+        .str.join(",")
+        .str.replace(",", " ")
+    )
     matches_df_dirty["MatchDatePandas"] = pd.to_datetime(matches_df_dirty["MatchDate"])
     matches_df_dirty["Game1"] = (
-        matches_df_dirty["wset1"] + matches_df_dirty["oset1"]
-    ).fillna(0).astype(int)
+        (matches_df_dirty["wset1"] + matches_df_dirty["oset1"]).fillna(0).astype(int)
+    )
     matches_df_dirty["Game2"] = (
-        matches_df_dirty["wset2"] + matches_df_dirty["oset2"]
-    ).fillna(0).astype(int)
+        (matches_df_dirty["wset2"] + matches_df_dirty["oset2"]).fillna(0).astype(int)
+    )
     matches_df_dirty["Game3"] = (
-        matches_df_dirty["wset3"] + matches_df_dirty["oset3"]
-    ).fillna(0).astype(int)
+        (matches_df_dirty["wset3"] + matches_df_dirty["oset3"]).fillna(0).astype(int)
+    )
     matches_df_dirty["Game4"] = (
-        matches_df_dirty["wset4"] + matches_df_dirty["oset4"]
-    ).fillna(0).astype(int)
+        (matches_df_dirty["wset4"] + matches_df_dirty["oset4"]).fillna(0).astype(int)
+    )
     matches_df_dirty["Game5"] = (
-        matches_df_dirty["wset5"] + matches_df_dirty["oset5"]
-    ).fillna(0).astype(int)
+        (matches_df_dirty["wset5"] + matches_df_dirty["oset5"]).fillna(0).astype(int)
+    )
     matches_df_dirty["NumberOfGames"] = (
         (matches_df_dirty[["Game1", "Game2", "Game3", "Game4", "Game5"]] != 0)
         .astype(int)

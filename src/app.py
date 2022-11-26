@@ -12,8 +12,8 @@ from utils.extraction import load_matches, load_rankings, load_tournaments
 from utils.general import add_bg_from_local, convert_df_to_csv
 from utils.styles import *
 
-profiler = Profiler()
-profiler.start()
+# profiler = Profiler()
+# profiler.start()
 
 # Basic configurations
 pd.options.mode.chained_assignment = None
@@ -30,33 +30,48 @@ plt.style.use("ggplot")
 # Get the starting datetime.
 current_date = dt.datetime.now().date()
 
+
 # Page header.
-header_container = st.container()
-header_container.image("res/legacy.png")
-header_container.markdown(
-    "> Visit [github.com/ilmarivikstrom/clublocker](https://github.com/ilmarivikstrom/clublocker)"
-)
-header_container.markdown(
-    "> Connect on [https://linkedin.com/in/ilmarivikstrom](https://linkedin.com/in/ilmarivikstrom)"
+_, header_image_container, _ = st.columns(3)
+header_image_container.image("res/legacy.png", width=300)
+header_text_container = st.container()
+header_text_container.markdown(
+    """
+    # Deep Dive into Competitive Squash in Finland
+"""
 )
 
-header_container.markdown("# Squash Finland Club Locker Data Analysis")
+author_container = st.container()
+author_container.markdown(
+    """
+    > Visit the repo [github.com/ilmarivikstrom/clublocker](https://github.com/ilmarivikstrom/clublocker)
 
+    > Connect on [https://linkedin.com/in/ilmarivikstrom](https://linkedin.com/in/ilmarivikstrom)
+    """
+)
+author_container.markdown("---")
+
+introduction_container = st.container()
+introduction_container.markdown("## Introduction stuff here...")
+introduction_container.markdown("---")
+
+loading_container = st.container()
+loading_container.markdown("## Loading stuff here...")
 tournaments_df = load_tournaments()
 matches_df = load_matches(tournaments_df)
 rankings_df = load_rankings()
 
-header_container.info(
+loading_container.info(
     f"Tournament data covers **{len(tournaments_df)}** tournaments starting from {str(tournaments_df['StartDatePandas'].min().date())} and ending in {str(tournaments_df['StartDatePandas'].max().date())}. Only tournament matches are included. League matches are not included in the analysis."
 )
-header_container.info(
+loading_container.info(
     f"Match data covers **{len(matches_df)} matches** starting from {str(matches_df['MatchDatePandas'].min().date())} and ending in {str(matches_df['MatchDatePandas'].max().date())}."
 )
-header_container.info(
+loading_container.info(
     f"Ranking data covers **{len(rankings_df.loc[rankings_df['division'] == 'All Men'])} men** and **{len(rankings_df.loc[rankings_df['division'] == 'All Women'])} women**."
 )
+loading_container.markdown("---")
 
-header_container.markdown("---")
 
 sb_col1, sb_col2, sb_col3 = st.sidebar.columns(3)
 sb_col1.markdown("### Tournament data")
@@ -119,7 +134,12 @@ for label in ax.get_xticklabels(which="major"):
 tournament_container.pyplot(fig)
 
 
-tournament_container.dataframe(tournaments_df.sort_values(by=["NumPlayers"], ascending=False).head(10)[["TournamentName", "Year", "Month", "NumPlayers", "covid"]], use_container_width=True)
+tournament_container.dataframe(
+    tournaments_df.sort_values(by=["NumPlayers"], ascending=False).head(10)[
+        ["TournamentName", "Year", "Month", "NumPlayers", "covid"]
+    ],
+    use_container_width=True,
+)
 
 
 tournament_container.markdown("---")
@@ -306,7 +326,7 @@ player_container.dataframe(
     search_results[
         ["WinnerPlayer", "LoserPlayer", "Score_Short", "Rallies", "MatchDatePandas"]
     ],
-    use_container_width=True
+    use_container_width=True,
 )
 player_container.caption(f"Found {len(search_results)} matches for player {name}")
 
@@ -418,5 +438,5 @@ sn.heatmap(
 new_container.pyplot(fig)
 
 
-profiler.stop()
-profiler.print()
+# profiler.stop()
+# profiler.print()

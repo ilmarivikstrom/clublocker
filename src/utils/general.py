@@ -16,7 +16,7 @@ def add_bg_from_local(image_file: str) -> None:
     <style>
     .stApp {{
         background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
-        background-size: cover
+        background-size: cover;
     }}
     [data-testid="stHeader"] {{
         background-color: rgba(0, 0, 0, 0);
