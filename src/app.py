@@ -75,7 +75,7 @@ introduction_container.markdown(
     - spread the insights and encourage discussion
     - take a step towards more data-driven future and decision making
 
-    I have done my best to ensure the analysis is done properly without great mistakes or misconclusions. However, it is possible that such software bugs or misunderstandings do exist in the following analysis.
+    Disclaimer: I have done my best to ensure the analysis is done properly without any major mistakes or misconclusions. However, it is possible that such software bugs or misunderstandings do exist in the following analysis.
 
     #### With all of these out of the way, let's dive in!
     """
