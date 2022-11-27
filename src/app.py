@@ -55,27 +55,29 @@ introduction_container = st.container()
 introduction_container.markdown(
     """
     # Introduction
-    In 2021, [Finnish Squash Association (FSA) reported](https://www.squash.fi/Hallitutkimus+2021) that Finnish squash had experienced significant growth during the past three years. A year later, FSA presented [encouraging study results](https://www.squash.fi/Squashin+kiinnostus+kasvussa) about the perceived interest in squash in Finland.
+    In 2021, [Finnish Squash Association (FSA) reported](https://www.squash.fi/Hallitutkimus+2021) that Finnish squash scene had experienced significant growth during the past three years. A year later, FSA presented [encouraging study results](https://www.squash.fi/Squashin+kiinnostus+kasvussa) about increased interest in squash in Finland.
     
-    The key results are as follows:
-    - over **500,000** Finnish people are interested in squash
+    The key takeaways from the articales are the follwing:
+    - over **500,000** Finnish people are interested in squash in 2022
     - growth of **over 70%** compared to the previous years
     
-    The growth is visible to any hobbyist looking to book courts. Playing back the previous years, it is evident that squash courts are in higher demand today (Q4/2022) than in recent history. My personal experience suggests that truckloads of newcomers, in particular, are swarming the courts. This phenomenon is clear during primetime hours in Helsinki, at least.
+    This growth is visible to any hobbyist that is looking to book courts. Rewinding the previous years, it is evident that squash courts are in higher demand today (Q4/2022) than in recent history. My personal experience suggests that truckloads of newcomers, in particular, finding the courts and are enjoying the sport. This phenomenon is very clear at least in Helsinki during primetime hours in Helsinki.
     
-    #### These results and observations are great news for the sport!
+    #### These results and observations are great news for the sport, no?!
     
     > ***Are we experiencing some kind of a squash renaissance? Are the dark days already behind us?***
     
-    Well, it may still be a bit too early to take the results at face value. Many questions are still begging for an answer. One of these questions is: **can we see the growth in competitive squash as well?** The study reports did not unfortunately teach us anything new about the state of competitive squash. I have not seen a proper analysis conducted on the open competition data that is available from the past few years. There is no reason why such analysis could not be conducted, because all tournaments, matches, and league activities are publicly available from the Club Locker (CL) service. For a while it has been only about someone crunching the numbers.
+    Well, yes. However, it may still be a bit too early to take the results at face value. While increased interest is a healthy signals, it does not paint us the complete view. One interesting aspect is: **can we see the growth in competitive squash as well?** The articles above did not consider competitive squash. I have not seen a proper analysis where statistics from the recent tournaments are discussed thoroughly. There is no reason why such analysis could not be conducted, because all tournaments, matches, and league activities are publicly available from the Club Locker (CL) portal. For a while it has been only about someone crunching the numbers.
     
-    I have attempted to showcase the competitive squash data in this analysis with the following objectives:
-    - present the historical data in an understandable format
+    In this analysis, I have attempted to showcase the competitive squash data. The following objectives have guided my work:
+    - present the historical data in an human-readable format
     - find patterns and draw insights from the data
     - spread the insights and encourage discussion
-    - take a step towards more data-driven future
+    - take a step towards more data-driven future and decision making
 
-    #### Alright, let's dive in!
+    I have done my best to ensure the analysis is done properly without great mistakes or misconclusions. However, it is possible that such software bugs or misunderstandings do exist in the following analysis.
+
+    #### With all of these out of the way, let's dive in!
     """
 )
 introduction_container.markdown("---")
