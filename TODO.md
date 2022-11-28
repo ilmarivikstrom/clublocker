@@ -7,3 +7,5 @@
   - [ ] Based on these queries, construct a time series of rating/points & ranking for each player.
 - [ ] Player data
   - [ ] Show player activity related to the ranking.
+- [ ] Tournaments
+  - [ ] Calculate and visualize the influx of new players never seen in previous tournaments.
