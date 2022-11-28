@@ -249,6 +249,7 @@ def _fetch_and_save_tournament_matches(
     matches_list = []
     index = 0
     progress_bar = st.progress(0)
+    status_text = st.empty()
     for tournament in dates_ids:
         date_range_list = [
             str(x.date()) for x in pd.date_range(tournament[1], tournament[2])
@@ -271,6 +272,8 @@ def _fetch_and_save_tournament_matches(
         )
         index += 1
         progress_bar.progress(index / len(dates_ids))
+        status_text.text(f'Loaded matches from {results_df.loc[results_df["TournamentID"] == tournament[0]]["TournamentName"].values.tolist()[0]} tournament...')
+    status_text.text("")
     matches_df_dirty = pd.DataFrame(matches_list, columns=matches_list[0].keys())
     matches_df_dirty = matches_df_dirty.drop_duplicates(subset="matchid", keep="first")
     matches_df_dirty.to_pickle(f"data/{file_name}")
