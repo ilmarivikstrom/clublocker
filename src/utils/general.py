@@ -8,6 +8,16 @@ def convert_df_to_csv(df_to_convert: pd.DataFrame) -> str:
     return df_to_convert.to_csv().encode("utf-8")
 
 
+def hide_table_row_index():
+    hide_table_row_index = """
+                <style>
+                thead tr th:first-child {display:none}
+                tbody th {display:none}
+                </style>
+                """
+    return hide_table_row_index
+
+
 def add_bg_from_local(image_file: str) -> None:
     with open(image_file, "rb") as image:
         encoded_string = base64.b64encode(image.read())
@@ -40,6 +50,9 @@ def add_bg_from_local(image_file: str) -> None:
     }}
     button[title="View fullscreen"] {{
         display: none;
+    }}
+    td {{
+        background: #22222255;
     }}
     </style>
     """,
