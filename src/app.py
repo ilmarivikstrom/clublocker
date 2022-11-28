@@ -228,7 +228,7 @@ tournament_container.table(top_highest_tournaments_df)
 tournament_container.markdown(
     f"""
     A couple of insights from this table:
-    - Out of these top **{number_top_tournaments}** tournaments, **{len(top_highest_tournaments_df.loc[top_highest_tournaments_df["covid"] == "post"])}** tournaments took place post-pandemic.
+    - Out of these **{number_top_tournaments}** tournaments, **{len(top_highest_tournaments_df.loc[top_highest_tournaments_df["covid"] == "post"])}** tournaments took place post-pandemic.
     - National championships (juniors, masters and general) are drawing in a lot of participants.
 
     \\
@@ -242,7 +242,7 @@ tournament_container.table(top_lowest_tournaments_df)
 tournament_container.markdown(
     f"""
     A couple of insights from this table as well:
-    - Out of these top **{number_top_tournaments}** tournaments, **{len(top_lowest_tournaments_df.loc[top_lowest_tournaments_df["covid"] == "post"])}** tournaments took place post-pandemic.
+    - Out of these **{number_top_tournaments}** tournaments, **{len(top_lowest_tournaments_df.loc[top_lowest_tournaments_df["covid"] == "post"])}** tournaments took place post-pandemic.
     - Most of these tournaments were held outside Uusimaa.
     """
 )
