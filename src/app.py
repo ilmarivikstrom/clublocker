@@ -9,7 +9,7 @@ import streamlit as st
 from pyinstrument import Profiler
 
 from utils.extraction import load_matches, load_rankings, load_tournaments
-from utils.general import add_bg_from_local, convert_df_to_csv
+from utils.general import add_bg_from_local, convert_df_to_csv, hide_table_row_index
 from utils.styles import *
 
 # profiler = Profiler()
@@ -24,6 +24,16 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
     menu_items={},
 )
+streamlit_style = """
+			<style>
+			@import url('https://fonts.googleapis.com/css2?family=PT+Sans');
+
+			html, body, [class*="css"]  {
+			font-family: 'PT Sans', sans-serif;
+			}
+			</style>
+			"""
+st.markdown(streamlit_style, unsafe_allow_html=True)
 add_bg_from_local("res/squash_wall_dark95_blur3.jpg")
 plt.style.use("ggplot")
 
@@ -37,7 +47,7 @@ header_image_container.image("res/legacy.png", width=300)
 header_text_container = st.container()
 header_text_container.title(
     """
-    Deep Dive into Finnish Competitive Squash Data
+    Deep Dive into Finnish Squash Tournament Data
     """
 )
 
@@ -57,54 +67,60 @@ introduction_container.markdown(
     # Introduction
     In 2021, [Finnish Squash Association (FSA) reported](https://www.squash.fi/Hallitutkimus+2021) that Finnish squash scene had experienced significant growth during the past three years. A year later, FSA presented [encouraging study results](https://www.squash.fi/Squashin+kiinnostus+kasvussa) about increased interest in squash in Finland.
     
-    The key takeaways from the articales are the follwing:
+    The key takeaways from the articles are the follwing:
     - over **500,000** Finnish people are interested in squash in 2022
     - growth of **over 70%** compared to the previous years
     
     This growth is visible to any hobbyist that is looking to book courts. Rewinding the previous years, it is evident that squash courts are in higher demand today (Q4/2022) than in recent history. My personal experience suggests that truckloads of newcomers, in particular, finding the courts and are enjoying the sport. This phenomenon is very clear at least in Helsinki during primetime hours in Helsinki.
     
-    #### These results and observations are great news for the sport, no?!
+    > *"These results are great news for the sport, no?"*
+
+    Well, yes, the news are not bad!
+
+    > *Are we experiencing some kind of a squash renaissance? Are the dark days already behind us?*
     
-    > ***Are we experiencing some kind of a squash renaissance? Are the dark days already behind us?***
+    We don't know yet. While increased interest is a healthy signals, it does not paint us the whole view. There are many unanswered questions, like **can we see the growth in competitive squash as well?** The linked FSA articles did not consider the trends in competitive squash at all. In fact, I have not seen a single proper analysis where tournament statistics are being discussed thoroughly. To be frank, there aren't any good reasons why such analysis has not been conducted. The data from all tournaments, matches, and league activities is publicly available from the FSA Club Locker portal. In this report, we are scraping the data from Club Locker and performing the analysis.
     
-    Well, yes. However, it may still be a bit too early to take the results at face value. While increased interest is a healthy signals, it does not paint us the complete view. One interesting aspect is: **can we see the growth in competitive squash as well?** The articles above did not consider competitive squash. I have not seen a proper analysis where statistics from the recent tournaments are discussed thoroughly. There is no reason why such analysis could not be conducted, because all tournaments, matches, and league activities are publicly available from the Club Locker (CL) portal. For a while it has been only about someone crunching the numbers.
-    
-    In this analysis, I have attempted to showcase the competitive squash data. The following objectives have guided my work:
+    This report attempts to showcase the open squash tournament data for the public. The following objectives have guided my work:
     - present the historical data in an human-readable format
     - find patterns and draw insights from the data
     - spread the insights and encourage discussion
     - take a step towards more data-driven future and decision making
 
-    Disclaimer: I have done my best to ensure the analysis is done properly without any major mistakes or misconclusions. However, it is possible that such software bugs or misunderstandings do exist in the following analysis.
+    ***Disclaimer: I have done my best to ensure the analysis is done properly without any major mistakes or misconclusions. However, it is possible that such software bugs or misunderstandings do exist in the following analysis.***
 
-    #### With all of these out of the way, let's dive in!
+    #### Alright! With all of these out of the way, let's dive in.
     """
 )
 introduction_container.markdown("---")
 
+
 loading_container = st.container()
 loading_container.markdown(
     """
-    # Loading and preprocessing the Club Locker data
-    Before any analysis can take place, we need to fetch and preprocess fresh data from the Club Locker service. This happens automatically in the background, so you do not need to do anything.
+    # Loading and pre-processing the Club Locker tournament data
+    Before any analysis can take place, we need to fetch and pre-process fresh data from the Club Locker service. This happens automatically in the background, so you do not need to do anything.
 
-    You are able to advance in the analysis only after the data has been loaded, so **please hold on tight while we get the things ready for you...**
+    It should be noted, that **only tournament data is considered** in this study. This means that league matches, box league matches, etc., are omitted from the dataset.
+
+    You are able to advance in the analysis only after the data has been loaded, so *please hold on tight while we get the things ready for you...*
     """
 )
+
 tournaments_df = load_tournaments()
 matches_df = load_matches(tournaments_df)
 rankings_df = load_rankings()
 
 loading_container.info(
-    f"Tournament data covers **{len(tournaments_df)}** tournaments starting from {str(tournaments_df['StartDatePandas'].min().date())} and ending in {str(tournaments_df['StartDatePandas'].max().date())}. Only tournament matches are included. League matches are not included in the analysis."
+    f"Tournament data is ready! The data covers **{len(tournaments_df)} tournaments** from {str(tournaments_df['StartDatePandas'].min().date())} until {str(tournaments_df['StartDatePandas'].max().date())}."
 )
 loading_container.info(
-    f"Match data covers **{len(matches_df)} matches** starting from {str(matches_df['MatchDatePandas'].min().date())} and ending in {str(matches_df['MatchDatePandas'].max().date())}."
+    f"Match data is ready! The data covers **{len(matches_df)} matches** from {str(matches_df['MatchDatePandas'].min().date())} until {str(matches_df['MatchDatePandas'].max().date())}."
 )
 loading_container.info(
-    f"Ranking data covers **{len(rankings_df.loc[rankings_df['division'] == 'All Men'])} men** and **{len(rankings_df.loc[rankings_df['division'] == 'All Women'])} women**."
+    f"Ranking data is ready! The data covers **{len(rankings_df.loc[rankings_df['division'] == 'All Men'])} men** and **{len(rankings_df.loc[rankings_df['division'] == 'All Women'])} women**."
 )
-loading_container.success("**All data has been fetched. Let's move on**!")
+loading_container.success("⬇ All data has been fetched. Let's move on! ⬇")
 loading_container.markdown("---")
 
 
@@ -134,10 +150,31 @@ sb_col3.download_button(
 
 tournament_container = st.container()
 
-tournament_container.markdown("## Tournament data")
-tournament_container.markdown("")
-tournament_container.markdown("### Participation over time")
-tournament_container.markdown("")
+tournament_container.markdown(
+    f"""
+    ## Overview on the tournament data
+
+    Club Locker history contains **{len(tournaments_df)}** tournaments and **{len(matches_df)}** matches. Let's start with some fun statistics:
+    
+    - Total number of games: **{matches_df["NumberOfGames"].sum()}**
+    - Total number of rallies: **{matches_df["Rallies"].sum()}**
+    - Total time spent on court: **{matches_df["MatchDuration"].sum()}** minutes = **{int(matches_df["MatchDuration"].sum()/60)}** hours = **{round(matches_df["MatchDuration"].sum()/(60*24), 1)}** days
+    - Average number of games in a match: **{round(matches_df["NumberOfGames"].mean(), 2)}**
+    - Average number of rallies in a match: **{round(matches_df["Rallies"].mean(), 2)}**
+    - Average match length: **{round(matches_df["MatchDuration"].mean(), 2)}** minutes
+    - Average number of players in a tournament: **{round(tournaments_df["NumPlayers"].mean(), 2)}**
+
+    There are plenty more insights that you can draw from the data. If you'd like to play around in the data, you can do so yourself. Please find the download links for the pre-processed datasets by expanding the menu to the left on this page.
+    """
+)
+
+tournament_container.markdown(
+    """
+    #### Participation in squash tournaments over time
+
+    The number of tournament participants is a great metric for gauging the interest in competitive squash. Let's visualize the tournament participation by representing each tournament with a colored circle. The color signals if the tournament was held before or after the pandemic started.
+    """
+)
 fig, ax = plt.subplots()
 fig.tight_layout()
 sn.scatterplot(
@@ -153,10 +190,11 @@ sn.regplot(
     x="StartDateTimeStamp",
     y="NumPlayers",
     scatter=False,
-    order=3,
+    order=2,
 )
-ax.set_xlabel("Date")
-ax.set_ylabel("Number of players in tournament")
+ax.set_title("Tournament participation over time")
+ax.set_xlabel("Tournament date")
+ax.set_ylabel("Number of players")
 ax.xaxis.set_major_locator(mdates.YearLocator())
 xticks = ax.get_xticks()
 xticks_dates = [pd.to_datetime(dt.date.fromordinal(int(x))).date() for x in xticks]
@@ -166,12 +204,47 @@ for label in ax.get_xticklabels(which="major"):
     label.set(rotation=30, horizontalalignment="center", fontsize=8)
 tournament_container.pyplot(fig)
 
+tournament_container.markdown(
+    """
+    Looking at the chart we can see a few different things. The first clear observation is that almost all large tournaments were held in pre-covid era. When taking a bit more careful look at the data, we can see the quiet summer breaks and the lockdown months. If we exclude the lockdown time spans, the density of the tournament calendar seems to be relatively same for the whole history.
 
-tournament_container.dataframe(
-    tournaments_df.sort_values(by=["NumPlayers"], ascending=False).head(10)[
-        ["TournamentName", "Year", "Month", "NumPlayers", "covid"]
-    ],
-    use_container_width=True,
+    The red line skewering the graph is a 2nd order polynomial model fitted on the data. This model shows the general trend of the tournament participation. The trend shows the harsh truth, which is that there has been a clear decreasing trend for a long time.
+    """
+)
+
+
+number_top_tournaments = 15
+tournament_container.markdown(
+    f"""
+    \\
+    Let's pick the top {number_top_tournaments} tournaments with the most participants in the history!
+    """
+)
+
+top_highest_tournaments_df = tournaments_df.sort_values(by=["NumPlayers"], ascending=False).head(number_top_tournaments)[["TournamentName", "Year", "NumPlayers", "covid"]]
+tournament_container.markdown(hide_table_row_index(), unsafe_allow_html=True)
+tournament_container.table(top_highest_tournaments_df)
+
+tournament_container.markdown(
+    f"""
+    A couple of insights from this table:
+    - Out of these top **{number_top_tournaments}** tournaments, **{len(top_highest_tournaments_df.loc[top_highest_tournaments_df["covid"] == "post"])}** tournaments took place post-pandemic.
+    - National championships (juniors, masters and general) are drawing in a lot of participants.
+
+    \\
+    Alright, let's then look at the other end. These are the {number_top_tournaments} tournaments with the least participation!
+    """
+)
+
+top_lowest_tournaments_df = tournaments_df.sort_values(by=["NumPlayers"], ascending=True).head(number_top_tournaments)[["TournamentName", "Year", "NumPlayers", "covid"]]
+tournament_container.table(top_lowest_tournaments_df)
+
+tournament_container.markdown(
+    f"""
+    A couple of insights from this table as well:
+    - Out of these top **{number_top_tournaments}** tournaments, **{len(top_lowest_tournaments_df.loc[top_lowest_tournaments_df["covid"] == "post"])}** tournaments took place post-pandemic.
+    - Most of these tournaments were held outside Uusimaa.
+    """
 )
 
 
@@ -180,7 +253,7 @@ tournament_container.markdown("---")
 
 match_container = st.container()
 
-match_container.markdown("## Match data")
+match_container.markdown("## Overview on the match data")
 match_container.markdown("")
 match_container.markdown("### Match length distribution")
 match_container.markdown("")
@@ -198,8 +271,6 @@ sn.histplot(
     legend=True,
     palette=custom_palette_cmap,
 )
-
-
 match_container.pyplot(fig)
 
 
@@ -352,11 +423,11 @@ search_results = matches_df.loc[
 search_results["Win"] = search_results["WinnerPlayer"] == name
 search_results = search_results.sort_values(by=["matchid"], ascending=False)
 player_container.markdown("Here's a tabular view of the selected player:")
-player_container.dataframe(
+player_container.markdown(hide_table_row_index(), unsafe_allow_html=True)
+player_container.table(
     search_results[
         ["WinnerPlayer", "LoserPlayer", "Score_Short", "Rallies", "MatchDatePandas"]
     ],
-    use_container_width=True,
 )
 player_container.caption(f"Found {len(search_results)} matches for player {name}")
 
