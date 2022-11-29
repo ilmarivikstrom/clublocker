@@ -1,4 +1,5 @@
 import datetime as dt
+import glob
 import json
 from os import path
 
@@ -8,19 +9,24 @@ import requests
 import streamlit as st
 
 
-def load_tournaments() -> pd.DataFrame:
-    # Fetch and save tournaments, if needed.
-    current_date = dt.datetime.now().date()
-    if not path.exists(f"data/tournaments_{str(current_date)}.pkl"):
-        with st.spinner(
-            "Loading tournament data from Club Locker, please be patient..."
-        ):
-            _fetch_and_save_tournaments(
-                file_name=f"tournaments_{str(current_date)}.pkl"
-            )
-    tournaments_df_dirty = _load_pickle(
-        file_name=f"tournaments_{str(current_date)}.pkl"
-    )
+def load_tournaments(skip: bool) -> pd.DataFrame:
+    wildcard = "data/tournaments*"
+    if skip and (len(glob.glob(wildcard)) > 0):
+        latest_pickle_date = _get_latest_pickle_date(wildcard=wildcard)
+        tournaments_df_dirty = _load_pickle(file_name=f"tournaments_{str(latest_pickle_date)}.pkl")
+        print(f"Skipped loading new tournaments, loaded tournaments from {str(latest_pickle_date)}")
+    else:
+        current_date = dt.datetime.now().date()
+        if not path.exists(f"data/tournaments_{str(current_date)}.pkl"):
+            with st.spinner(
+                "Loading tournament data from Club Locker, please be patient..."
+            ):
+                _fetch_and_save_tournaments(
+                    file_name=f"tournaments_{str(current_date)}.pkl"
+                )
+        tournaments_df_dirty = _load_pickle(
+            file_name=f"tournaments_{str(current_date)}.pkl"
+        )
     tournaments_df_dirty["StartDatePandas"] = pd.to_datetime(
         tournaments_df_dirty["StartDate"]
     )
@@ -32,28 +38,40 @@ def load_tournaments() -> pd.DataFrame:
     return tournaments_df
 
 
-def load_matches(tournaments_df: pd.DataFrame) -> pd.DataFrame:
+def load_matches(skip: bool, tournaments_df: pd.DataFrame) -> pd.DataFrame:
     # Fetch and save tournament matches, if needed.
-    current_date = dt.datetime.now().date()
-    if not path.exists(f"data/matches_{str(current_date)}.pkl"):
-        with st.spinner(
-            "Loading match data from Club Locker. This can take a while, please be patient..."
-        ):
-            _fetch_and_save_tournament_matches(
-                tournaments_df, file_name=f"matches_{str(current_date)}.pkl"
-            )
-    matches_df_dirty = _load_pickle(file_name=f"matches_{str(current_date)}.pkl")
+    wildcard = "data/matches*"
+    if skip and (len(glob.glob(wildcard)) > 0):
+        latest_pickle_date = _get_latest_pickle_date(wildcard=wildcard)
+        matches_df_dirty = _load_pickle(file_name=f"matches_{str(latest_pickle_date)}.pkl")
+        print(f"Skipped loading new matches, loaded matches from {str(latest_pickle_date)}")
+    else:
+        current_date = dt.datetime.now().date()
+        if not path.exists(f"data/matches_{str(current_date)}.pkl"):
+            with st.spinner(
+                "Loading match data from Club Locker. This can take a while, please be patient..."
+            ):
+                _fetch_and_save_tournament_matches(
+                    tournaments_df, file_name=f"matches_{str(current_date)}.pkl"
+                )
+        matches_df_dirty = _load_pickle(file_name=f"matches_{str(current_date)}.pkl")
     matches_df = _preprocess_matches(matches_df_dirty)
     return matches_df
 
 
-def load_rankings() -> pd.DataFrame:
+def load_rankings(skip: bool) -> pd.DataFrame:
     # Fetch and save ranking data, if needed.
-    current_date = dt.datetime.now().date()
-    if not path.exists(f"data/rankings_{str(current_date)}.pkl"):
-        with st.spinner("Loading ranking data from Club Locker, please be patient..."):
-            _fetch_and_save_rankings(file_name=f"rankings_{str(current_date)}.pkl")
-    rankings_df_dirty = _load_pickle(file_name=f"rankings_{str(current_date)}.pkl")
+    wildcard = "data/rankings*"
+    if skip and (len(glob.glob(wildcard)) > 0):
+        latest_pickle_date = _get_latest_pickle_date(wildcard=wildcard)
+        rankings_df_dirty = _load_pickle(file_name=f"rankings_{str(latest_pickle_date)}.pkl")
+        print(f"Skipped loading new rankings, loaded rankings from {str(latest_pickle_date)}")
+    else:
+        current_date = dt.datetime.now().date()
+        if not path.exists(f"data/rankings_{str(current_date)}.pkl"):
+            with st.spinner("Loading ranking data from Club Locker, please be patient..."):
+                _fetch_and_save_rankings(file_name=f"rankings_{str(current_date)}.pkl")
+        rankings_df_dirty = _load_pickle(file_name=f"rankings_{str(current_date)}.pkl")
     rankings_df = _preprocess_rankings(rankings_df_dirty)
     return rankings_df
 
@@ -301,7 +319,17 @@ def _fetch_and_save_rankings(file_name: str) -> None:
     rankings_df.to_pickle(f"data/{file_name}")
 
 
-@st.experimental_memo
 def _load_pickle(file_name: str) -> pd.DataFrame:
     pickle = pd.read_pickle(f"data/{file_name}")
     return pickle
+
+
+def _get_latest_pickle_date(wildcard: str) -> dt.date:
+    pickles = glob.glob(wildcard)
+    latest_date = dt.datetime.fromtimestamp(0).date()
+    for pickle in pickles:
+        date_string = pickle.split("_")[-1].split(".")[0]
+        pickle_date = dt.datetime.strptime(date_string, "%Y-%m-%d").date()
+        if pickle_date > latest_date:
+            latest_date = pickle_date
+    return latest_date

@@ -33,6 +33,7 @@ streamlit_style = """
 			}
 			</style>
 			"""
+skip_data_fetch = True
 st.markdown(streamlit_style, unsafe_allow_html=True)
 add_bg_from_local("res/squash_wall_dark95_blur3.jpg")
 plt.style.use("ggplot")
@@ -47,7 +48,7 @@ header_image_container.image("res/legacy.png")
 header_text_container = st.container()
 header_text_container.title(
     """
-    Deep Dive into Finnish Squash Tournament Data
+    A Deep Dive into Finnish Squash Tournament Data
     """
 )
 
@@ -65,29 +66,29 @@ introduction_container = st.container()
 introduction_container.markdown(
     """
     # Introduction
-    In 2021, [Finnish Squash Association (FSA) reported](https://www.squash.fi/Hallitutkimus+2021) that Finnish squash scene had experienced significant growth during the past three years. A year later, FSA presented [encouraging study results](https://www.squash.fi/Squashin+kiinnostus+kasvussa) about increased interest in squash in Finland.
+    In 2021, [Finnish Squash Association (FSA) reported](https://www.squash.fi/Hallitutkimus+2021) that the Finnish squash scene had experienced significant growth during the past three years. A year later, FSA presented [encouraging study results](https://www.squash.fi/Squashin+kiinnostus+kasvussa) about the increased interest in squash in Finland.
     
-    The key takeaways from the articles are the follwing:
+    The key takeaways from the articles are the following:
     - over **500,000** Finnish people are interested in squash in 2022
     - growth of **over 70%** compared to the previous years
     
-    This growth is visible to any hobbyist that is looking to book courts. Rewinding the previous years, it is evident that squash courts are in higher demand today (Q4/2022) than in recent history. My personal experience suggests that truckloads of newcomers, in particular, finding the courts and are enjoying the sport. This phenomenon is very clear at least in Helsinki during primetime hours in Helsinki.
+    This growth is visible to any hobbyist that is looking to book courts. Rewinding the previous years, it is evident that squash courts are in higher demand today (Q4/2022) than in recent history. My personal experience suggests that truckloads of newcomers, in particular, are finding the courts and enjoying the sport. This phenomenon is very clear at least in Helsinki during primetime hours in Helsinki.
     
     > *"These results are great news for the sport, no?"*
 
-    Well, yes, the news are not bad!
+    Well, yes!!
 
     > *Are we experiencing some kind of a squash renaissance? Are the dark days already behind us?*
     
-    We don't know yet. While increased interest is a healthy signals, it does not paint us the whole view. There are many unanswered questions, like **can we see the growth in competitive squash as well?** The linked FSA articles did not consider the trends in competitive squash at all. In fact, I have not seen a single proper analysis where tournament statistics are being discussed thoroughly. To be frank, there aren't any good reasons why such analysis has not been conducted. The data from all tournaments, matches, and league activities is publicly available from the FSA Club Locker portal. In this report, we are scraping the data from Club Locker and performing the analysis.
+    We don't know yet. While increased interest is a healthy signal, it does not paint us the whole view. There are many unanswered questions, like **can we see the growth in competitive squash as well?** The linked FSA articles did not consider the trends in competitive squash at all. I have not seen a single proper analysis where tournament statistics are being discussed thoroughly. To be frank, there aren't any good reasons why such an analysis has not been conducted. The data from all tournaments, matches, and league activities are publicly available from the FSA Club Locker portal. In this report, we are scraping the data from Club Locker and performing the analysis.
     
     This report attempts to showcase the open squash tournament data for the public. The following objectives have guided my work:
-    - present the historical data in an human-readable format
+    - present the historical data in a human-readable format
     - find patterns and draw insights from the data
     - spread the insights and encourage discussion
-    - take a step towards more data-driven future and decision making
+    - take a step toward a more data-driven future and decision making
 
-    ***Disclaimer: I have done my best to ensure the analysis is done properly without any major mistakes or misconclusions. However, it is possible that such software bugs or misunderstandings do exist in the following analysis.***
+    ***Disclaimer: I have done my best to ensure the analysis is done properly without any major mistakes or misconclusions. However, such software bugs or misunderstandings may still exist in the following analysis.***
 
     #### Alright! With all of these out of the way, let's dive in.
     """
@@ -103,13 +104,13 @@ loading_container.markdown(
 
     It should be noted, that **only tournament data is considered** in this study. This means that league matches, box league matches, etc., are omitted from the dataset.
 
-    You are able to advance in the analysis only after the data has been loaded, so *please hold on tight while we get the things ready for you...*
+    You can advance in the analysis only after the data has been loaded, so *please hold on tight while we get the things ready for you...*
     """
 )
 
-tournaments_df = load_tournaments()
-matches_df = load_matches(tournaments_df)
-rankings_df = load_rankings()
+tournaments_df = load_tournaments(skip=skip_data_fetch)
+matches_df = load_matches(skip=skip_data_fetch, tournaments_df=tournaments_df)
+rankings_df = load_rankings(skip=skip_data_fetch)
 
 loading_container.info(
     f"Tournament data is ready! The data covers **{len(tournaments_df)} tournaments** from {str(tournaments_df['StartDatePandas'].min().date())} until {str(tournaments_df['StartDatePandas'].max().date())}."
@@ -152,7 +153,7 @@ tournament_container = st.container()
 
 tournament_container.markdown(
     f"""
-    ## Overview on the tournament data
+    ## Overview of the tournament data
 
     Club Locker history contains **{len(tournaments_df)}** tournaments and **{len(matches_df)}** matches. Let's start with some fun statistics:
     
@@ -164,7 +165,7 @@ tournament_container.markdown(
     - Average match length: **{round(matches_df["MatchDuration"].mean(), 2)}** minutes
     - Average number of players in a tournament: **{round(tournaments_df["NumPlayers"].mean(), 2)}**
 
-    There are plenty more insights that you can draw from the data. If you'd like to play around in the data, you can do so yourself. Please find the download links for the pre-processed datasets by expanding the menu to the left on this page.
+    There are plenty more insights that you can draw from the data. If you'd like to play around with the data, you can do so yourself. Please find the download links for the pre-processed datasets by expanding the menu to the left on this page.
     """
 )
 
@@ -172,7 +173,7 @@ tournament_container.markdown(
     """
     #### Participation in squash tournaments over time
 
-    The number of tournament participants is a great metric for gauging the interest in competitive squash. Let's visualize the tournament participation by representing each tournament with a colored circle. The color signals if the tournament was held before or after the pandemic started.
+    The number of tournament participants is a great metric for gauging interest in competitive squash. Let's visualize the tournament participation by representing each tournament with a colored circle. The color signals if the tournament was held before or after the pandemic started.
     """
 )
 fig, ax = plt.subplots()
@@ -206,9 +207,9 @@ tournament_container.pyplot(fig)
 
 tournament_container.markdown(
     """
-    Looking at the chart we can see a few different things. The first clear observation is that almost all large tournaments were held in pre-covid era. When taking a bit more careful look at the data, we can see the quiet summer breaks and the lockdown months. If we exclude the lockdown time spans, the density of the tournament calendar seems to be relatively same for the whole history.
+    Looking at the chart we can see a few different things. The first clear observation is that the largest tournaments were held in the pre-covid era. When taking a bit more careful look at the data, we can see the quiet summer breaks and the lockdown months. If we exclude the lockdown periods, the density of the tournament calendar seems to be relatively the same for the whole history.
 
-    The red line skewering the graph is a 2nd order polynomial model fitted on the data. This model shows the general trend of the tournament participation. The trend shows the harsh truth, which is that there has been a clear decreasing trend for a long time.
+    The red line skewering the graph is a 2nd-order polynomial model fitted on the data. This model shows the general trend of tournament participation. The trend shows the harsh truth, which is that there has been a clear decreasing trend for a long time.
     """
 )
 
@@ -217,7 +218,7 @@ number_top_tournaments = 15
 tournament_container.markdown(
     f"""
     \\
-    Let's pick the top {number_top_tournaments} tournaments with the most participants in the history!
+    Let's pick the top {number_top_tournaments} tournaments with the most participants in history!
     """
 )
 
@@ -349,7 +350,6 @@ match_container.markdown("---")
 
 
 player_activity_container = st.container()
-fig, ax = plt.subplots()
 player_activity_container.markdown("### Player activity analysis")
 unique_player_names = list(
     set(matches_df["WinnerPlayer"].values.tolist())
@@ -375,7 +375,8 @@ active_players_df[["WinnerPlayer", "LoserPlayer"]] = active_players_df[
     ["LoserPlayer", "WinnerPlayer"]
 ]
 
-show_results = 15
+show_results = 20
+fig, ax = plt.subplots()
 sn.barplot(
     data=active_players_df.head(show_results),
     x="TotalMatches",
@@ -390,7 +391,6 @@ player_activity_container.pyplot(fig)
 
 
 player_activity_container.markdown("The most common matchups")
-fig, ax = plt.subplots()
 common_matchups_df = (
     matches_df.groupby(by=["WinnerPlayer", "LoserPlayer"])
     .count()
@@ -400,6 +400,7 @@ common_matchups_df = (
 common_matchups_df["Matchup"] = common_matchups_df["Player1"].str.cat(
     common_matchups_df["Player2"], sep=" vs. "
 )
+fig, ax = plt.subplots()
 sn.barplot(
     data=common_matchups_df.head(show_results),
     x="matchid",
@@ -534,7 +535,7 @@ matches_months_weeks = (
 sn.heatmap(
     tournaments_months_weeks,
     linewidths=1,
-    cmap=custom_palette_cmap1,
+    cmap=sn.color_palette("rocket_r", as_cmap=True),
     linecolor="white",
     square=False,
     fmt="d",
