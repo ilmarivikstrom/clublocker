@@ -12,7 +12,7 @@ import streamlit as st
 def load_tournaments(skip: bool) -> pd.DataFrame:
     wildcard = "data/tournaments*"
     if skip and (len(glob.glob(wildcard)) > 0):
-        latest_pickle_date = _get_latest_pickle_date(wildcard=wildcard)
+        latest_pickle_date = get_latest_pickle_date(wildcard=wildcard)
         tournaments_df_dirty = _load_pickle(file_name=f"tournaments_{str(latest_pickle_date)}.pkl")
         print(f"Skipped loading new tournaments, loaded tournaments from {str(latest_pickle_date)}")
     else:
@@ -42,7 +42,7 @@ def load_matches(skip: bool, tournaments_df: pd.DataFrame) -> pd.DataFrame:
     # Fetch and save tournament matches, if needed.
     wildcard = "data/matches*"
     if skip and (len(glob.glob(wildcard)) > 0):
-        latest_pickle_date = _get_latest_pickle_date(wildcard=wildcard)
+        latest_pickle_date = get_latest_pickle_date(wildcard=wildcard)
         matches_df_dirty = _load_pickle(file_name=f"matches_{str(latest_pickle_date)}.pkl")
         print(f"Skipped loading new matches, loaded matches from {str(latest_pickle_date)}")
     else:
@@ -63,7 +63,7 @@ def load_rankings(skip: bool) -> pd.DataFrame:
     # Fetch and save ranking data, if needed.
     wildcard = "data/rankings*"
     if skip and (len(glob.glob(wildcard)) > 0):
-        latest_pickle_date = _get_latest_pickle_date(wildcard=wildcard)
+        latest_pickle_date = get_latest_pickle_date(wildcard=wildcard)
         rankings_df_dirty = _load_pickle(file_name=f"rankings_{str(latest_pickle_date)}.pkl")
         print(f"Skipped loading new rankings, loaded rankings from {str(latest_pickle_date)}")
     else:
@@ -324,7 +324,7 @@ def _load_pickle(file_name: str) -> pd.DataFrame:
     return pickle
 
 
-def _get_latest_pickle_date(wildcard: str) -> dt.date:
+def get_latest_pickle_date(wildcard: str) -> dt.date:
     pickles = glob.glob(wildcard)
     latest_date = dt.datetime.fromtimestamp(0).date()
     for pickle in pickles:

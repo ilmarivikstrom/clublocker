@@ -18,8 +18,8 @@ def hide_table_row_index():
     return hide_table_row_index
 
 
-def add_bg_from_local(image_file: str) -> None:
-    with open(image_file, "rb") as image:
+def custom_css() -> None:
+    with open("res/squash_wall_dark95_blur3.jpg", "rb") as image:
         encoded_string = base64.b64encode(image.read())
     st.markdown(
         f"""

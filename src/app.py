@@ -8,8 +8,8 @@ import seaborn as sn
 import streamlit as st
 from pyinstrument import Profiler
 
-from utils.extraction import load_matches, load_rankings, load_tournaments, _get_latest_pickle_date
-from utils.general import add_bg_from_local, convert_df_to_csv, hide_table_row_index
+from utils.extraction import load_matches, load_rankings, load_tournaments, get_latest_pickle_date
+from utils.general import custom_css, convert_df_to_csv, hide_table_row_index
 from utils.styles import *
 
 # profiler = Profiler()
@@ -35,7 +35,7 @@ streamlit_style = """
 			"""
 skip_data_fetch = True
 st.markdown(streamlit_style, unsafe_allow_html=True)
-add_bg_from_local("res/squash_wall_dark95_blur3.jpg")
+custom_css()
 plt.style.use("ggplot")
 
 # Get the starting datetime.
@@ -148,19 +148,19 @@ st.sidebar.markdown(
 st.sidebar.download_button(
     label="Tournament data",
     data=convert_df_to_csv(tournaments_df),
-    file_name=f"tournaments_{str(_get_latest_pickle_date('data/tournaments*'))}.csv",
+    file_name=f"tournaments_{str(get_latest_pickle_date('data/tournaments*'))}.csv",
     mime="text/csv",
 )
 st.sidebar.download_button(
     label="Match data",
     data=convert_df_to_csv(matches_df),
-    file_name=f"matches_{str(_get_latest_pickle_date('data/matches*'))}.csv",
+    file_name=f"matches_{str(get_latest_pickle_date('data/matches*'))}.csv",
     mime="text/csv",
 )
 st.sidebar.download_button(
     label="Ranking data",
     data=convert_df_to_csv(rankings_df),
-    file_name=f"rankings_{str(_get_latest_pickle_date('data/rankings*'))}.csv",
+    file_name=f"rankings_{str(get_latest_pickle_date('data/rankings*'))}.csv",
     mime="text/csv",
 )
 
