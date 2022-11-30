@@ -24,6 +24,9 @@ def add_bg_from_local(image_file: str) -> None:
     st.markdown(
         f"""
     <style>
+    a {{
+        text-decoration: none;
+    }}
     html {{
         font-size: 110%;
     }}
@@ -39,7 +42,7 @@ def add_bg_from_local(image_file: str) -> None:
         background: linear-gradient(to up, #414345, #232526);
     }}
     .block-container {{
-        max-width: 70rem;
+        max-width: 66rem;
     }}
     img {{
         border-radius: 15px;
@@ -55,10 +58,10 @@ def add_bg_from_local(image_file: str) -> None:
         display: none;
     }}
     td {{
-        background: #222222bb;
+        background: #111111bb;
     }}
     th {{
-        background: #111111bb;
+        background: #000000bb;
     }}
     </style>
     """,

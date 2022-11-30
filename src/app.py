@@ -8,7 +8,7 @@ import seaborn as sn
 import streamlit as st
 from pyinstrument import Profiler
 
-from utils.extraction import load_matches, load_rankings, load_tournaments
+from utils.extraction import load_matches, load_rankings, load_tournaments, _get_latest_pickle_date
 from utils.general import add_bg_from_local, convert_df_to_csv, hide_table_row_index
 from utils.styles import *
 
@@ -60,12 +60,13 @@ author_container.markdown(
     > Connect on [https://linkedin.com/in/ilmarivikstrom](https://linkedin.com/in/ilmarivikstrom)
     """
 )
+
 author_container.markdown("---")
 
 introduction_container = st.container()
 introduction_container.markdown(
     """
-    # Introduction
+    # 1. Introduction
     In 2021, [Finnish Squash Association (FSA) reported](https://www.squash.fi/Hallitutkimus+2021) that the Finnish squash scene had experienced significant growth during the past three years. A year later, FSA presented [encouraging study results](https://www.squash.fi/Squashin+kiinnostus+kasvussa) about the increased interest in squash in Finland.
     
     The key takeaways from the articles are the following:
@@ -99,7 +100,7 @@ introduction_container.markdown("---")
 loading_container = st.container()
 loading_container.markdown(
     """
-    # Loading and pre-processing the Club Locker tournament data
+    # 2. Loading and pre-processing the Club Locker tournament data
     Before any analysis can take place, we need to fetch and pre-process fresh data from the Club Locker service. This happens automatically in the background, so you do not need to do anything.
 
     It should be noted, that **only tournament data is considered** in this study. This means that league matches, box league matches, etc., are omitted from the dataset.
@@ -125,26 +126,41 @@ loading_container.success("⬇ All data has been fetched. Let's move on! ⬇")
 loading_container.markdown("---")
 
 
-sb_col1, sb_col2, sb_col3 = st.sidebar.columns(3)
-sb_col1.markdown("### Tournament data")
-sb_col1.download_button(
-    label="⬇️ Download ⬇️",
+
+st.sidebar.markdown(
+    """
+    # Table of Contents
+    - [1. Introduction](#1-introduction)
+    - [2. Loading and Pre-Processing the Club Locker Tournament Data](#2-loading-and-pre-processing-the-club-locker-tournament-data)
+    - [3. Overview of the Tournament Data](#3-overview-of-the-tournament-data)
+      - [3.1 First things first: some fun statistics](#3-1-first-things-first-some-fun-statistics)
+      - [3.2 Down to business: Participation in squash tournaments over time](#3-2-down-to-business-participation-in-squash-tournaments-over-time)
+
+    ---
+    """
+)
+
+st.sidebar.markdown(
+    """
+    #### Interested in the datasets? Download from here.
+    """
+)
+st.sidebar.download_button(
+    label="Tournament data",
     data=convert_df_to_csv(tournaments_df),
-    file_name=f"tournaments_{str(current_date)}.csv",
+    file_name=f"tournaments_{str(_get_latest_pickle_date('data/tournaments*'))}.csv",
     mime="text/csv",
 )
-sb_col2.markdown("### Match data")
-sb_col2.download_button(
-    label="⬇️ Download ⬇️",
+st.sidebar.download_button(
+    label="Match data",
     data=convert_df_to_csv(matches_df),
-    file_name=f"matches_{str(current_date)}.csv",
+    file_name=f"matches_{str(_get_latest_pickle_date('data/matches*'))}.csv",
     mime="text/csv",
 )
-sb_col3.markdown("### Ranking data")
-sb_col3.download_button(
-    label="⬇️ Download ⬇️",
+st.sidebar.download_button(
+    label="Ranking data",
     data=convert_df_to_csv(rankings_df),
-    file_name=f"rankings_{str(current_date)}.csv",
+    file_name=f"rankings_{str(_get_latest_pickle_date('data/rankings*'))}.csv",
     mime="text/csv",
 )
 
@@ -153,9 +169,13 @@ tournament_container = st.container()
 
 tournament_container.markdown(
     f"""
-    ## Overview of the tournament data
+    # 3. Overview of the tournament data
 
-    Club Locker history contains **{len(tournaments_df)}** tournaments and **{len(matches_df)}** matches. Let's start with some fun statistics:
+    In this section, we are taking a general look on the tournament data.
+
+    #### 3.1 First things first: some fun statistics
+
+    Club Locker history contains **{len(tournaments_df)}** tournaments and **{len(matches_df)}** matches. Here are some cool insights:
     
     - Total number of games: **{matches_df["NumberOfGames"].sum()}**
     - Total number of rallies: **{matches_df["Rallies"].sum()}**
@@ -171,7 +191,7 @@ tournament_container.markdown(
 
 tournament_container.markdown(
     """
-    #### Participation in squash tournaments over time
+    #### 3.2 Down to business: Participation in squash tournaments over time
 
     The number of tournament participants is a great metric for gauging interest in competitive squash. Let's visualize the tournament participation by representing each tournament with a colored circle. The color signals if the tournament was held before or after the pandemic started.
     """
@@ -208,7 +228,7 @@ tournament_container.pyplot(fig)
 tournament_container.markdown(
     """
     Looking at the chart we can see a few different things. The first clear observation is that the largest tournaments were held in the pre-covid era. When taking a bit more careful look at the data, we can see the quiet summer breaks and the lockdown months. If we exclude the lockdown periods, the density of the tournament calendar seems to be relatively the same for the whole history.
-
+    
     The red line skewering the graph is a 2nd-order polynomial model fitted on the data. This model shows the general trend of tournament participation. The trend shows the harsh truth, which is that there has been a clear decreasing trend for a long time.
     """
 )
@@ -217,7 +237,6 @@ tournament_container.markdown(
 number_top_tournaments = 15
 tournament_container.markdown(
     f"""
-    \\
     Let's pick the top {number_top_tournaments} tournaments with the most participants in history!
     """
 )
@@ -258,7 +277,7 @@ wip_container.markdown("---")
 
 match_container = st.container()
 
-match_container.markdown("## Overview on the match data")
+match_container.markdown("## Overview of the match data")
 match_container.markdown("")
 match_container.markdown("### Match length distribution")
 match_container.markdown("")
@@ -420,7 +439,8 @@ player_container.markdown("### Individual player statistics based on tournament 
 unique_player_names = np.sort(
     pd.unique(matches_df[["vPlayerName", "hPlayerName"]].values.ravel("K"))
 )
-name = player_container.selectbox("Select a player", unique_player_names)
+unique_player_names = np.concatenate((["Select a player"], unique_player_names))
+name = player_container.selectbox("", unique_player_names)
 search_results = matches_df.loc[
     matches_df["vPlayerName"].str.contains(name, case=False)
     | matches_df["hPlayerName"].str.contains(name, case=False)
