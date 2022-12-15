@@ -135,6 +135,10 @@ st.sidebar.markdown(
     - [3. Overview of the Tournament Data](#3-overview-of-the-tournament-data)
       - [3.1 First things first: some fun statistics](#3-1-first-things-first-some-fun-statistics)
       - [3.2 Down to business: Participation in squash tournaments over time](#3-2-down-to-business-participation-in-squash-tournaments-over-time)
+    - [4. Overview of the player data](#4-overview-of-the-player-data)
+      - [4.1 The most active players](#4-1-the-most-active-players)
+      - [4.2 The toughest rivalries](#4-2-the-toughest-rivalries)
+
 
     ---
     """
@@ -215,7 +219,7 @@ sn.regplot(
 )
 ax.set_title("Tournament participation over time")
 ax.set_xlabel("Tournament date")
-ax.set_ylabel("Number of players")
+ax.set_ylabel("Players in a tournament")
 ax.xaxis.set_major_locator(mdates.YearLocator())
 xticks = ax.get_xticks()
 xticks_dates = [pd.to_datetime(dt.date.fromordinal(int(x))).date() for x in xticks]
@@ -244,7 +248,7 @@ tournament_container.markdown(
 top_highest_tournaments_df = tournaments_df.sort_values(by=["NumPlayers"], ascending=False).head(number_top_tournaments)[["TournamentName", "Year", "NumPlayers", "covid"]]
 tournament_container.markdown(hide_table_row_index(), unsafe_allow_html=True)
 
-tournament_container.table(top_highest_tournaments_df.style.background_gradient(cmap='Greens', low=0.5, subset=["NumPlayers"]))
+tournament_container.table(top_highest_tournaments_df.rename(columns={"TournamentName": "Tournament", "NumPlayers": "Players", "covid": "Covid"}).style.background_gradient(cmap='Greens', low=0.5, subset=["Players"]))
 
 tournament_container.markdown(
     f"""
@@ -258,13 +262,14 @@ tournament_container.markdown(
 )
 
 top_lowest_tournaments_df = tournaments_df.sort_values(by=["NumPlayers"], ascending=True).head(number_top_tournaments)[["TournamentName", "Year", "NumPlayers", "covid"]]
-tournament_container.table(top_lowest_tournaments_df.style.background_gradient(cmap='Reds_r', high=0.5, subset=["NumPlayers"]))
+tournament_container.table(top_lowest_tournaments_df.rename(columns={"TournamentName": "Tournament", "NumPlayers": "Players", "covid": "Covid"}).style.background_gradient(cmap='Reds_r', high=0.5, subset=["Players"]))
 
 tournament_container.markdown(
     f"""
     A couple of insights from this table as well:
     - Out of these **{number_top_tournaments}** tournaments, **{len(top_lowest_tournaments_df.loc[top_lowest_tournaments_df["covid"] == "post"])}** tournaments took place post-pandemic.
     - Most of these tournaments were held outside Uusimaa.
+    - Some of these tournaments were small by design, e.g. qualifications for national teams, etc.
     """
 )
 
@@ -273,11 +278,22 @@ tournament_container.markdown("---")
 
 
 
-
-
-
 player_activity_container = st.container()
-player_activity_container.markdown("### Player activity analysis")
+show_results = 25
+player_activity_container.markdown("# 4. Overview of the player data")
+player_activity_container.markdown(
+    """
+    Let's take a look at the data we have about the players who participate in the squash tournaments.
+    """
+)
+player_activity_container.markdown(
+    f"""
+    #### 4.1 The most active players
+    The tournaments cannot happen without an active base of competitive players. The rankings include hundreds and hundreds of competitive players, but it would be interesting to know who exactly are the players that participate the most. Here is a list of the top {show_results} active players in descending order!
+    """
+)
+
+
 unique_player_names = list(
     set(matches_df["WinnerPlayer"].values.tolist())
     | set(matches_df["LoserPlayer"].values.tolist())
@@ -302,7 +318,6 @@ active_players_df[["WinnerPlayer", "LoserPlayer"]] = active_players_df[
     ["LoserPlayer", "WinnerPlayer"]
 ]
 
-show_results = 20
 fig, ax = plt.subplots()
 sn.barplot(
     data=active_players_df.head(show_results),
@@ -310,14 +325,18 @@ sn.barplot(
     y="Player",
     palette=sn.color_palette("husl", show_results * 20),
 )
-ax.set_xlabel("Number of matches played")
+ax.set_xlabel("Number of played matches")
 ax.set_ylabel("Player name")
 
-player_activity_container.markdown("WIP")
 player_activity_container.pyplot(fig)
 
 
-player_activity_container.markdown("The most common matchups")
+player_activity_container.markdown(
+    f"""
+    #### 4.2 The toughest rivalries
+    One of the best aspects of competitive squash is the formation of friendly rivalries when two relatively equally skilled players meet each other. Based on the players' activity and pure luck, a rivalrous matchup can happen surprisingly often. Here's a breakdown of the top {show_results} most common matchups that have taken place!
+    """
+)
 common_matchups_df = (
     matches_df.groupby(by=["WinnerPlayer", "LoserPlayer"])
     .count()
@@ -334,8 +353,8 @@ sn.barplot(
     y="Matchup",
     palette=sn.color_palette("husl", show_results * 20),
 )
-ax.set_xlabel("Number of matchups")
-ax.set_ylabel("Players")
+ax.set_xlabel("Number of played matches")
+ax.set_ylabel("Matchup")
 player_activity_container.pyplot(fig)
 
 player_activity_container.markdown("---")
@@ -343,7 +362,9 @@ player_activity_container.markdown("---")
 
 
 wip_container = st.container()
-wip_container.markdown("# Everything after this point is under construction!")
+wip_container.markdown("---")
+wip_container.markdown("# Everything below is under construction!")
+wip_container.markdown("---")
 wip_container.markdown("---")
 
 match_container = st.container()
