@@ -238,10 +238,40 @@ tournament_container.markdown(
 )
 
 
+tournament_container.markdown(
+    f"""
+    Let's plot the same tournament participation data in a way where it is easy to compare the same months of different years.
+    """
+)
+fig, ax = plt.subplots()
+
+tournament_players_months_weeks = (
+    tournaments_df.groupby(by=["Month", "Year"])
+    .sum()[["NumPlayers"]]
+    .reset_index()
+    .pivot("Year", "Month", "NumPlayers")
+    .fillna(0)
+    .astype(int)
+)
+
+sn.heatmap(
+    tournament_players_months_weeks,
+    linewidths=1,
+    cmap=sn.color_palette("rocket_r", as_cmap=True),
+    linecolor="white",
+    square=False,
+    fmt="d",
+    annot=True,
+)
+tournament_container.pyplot(fig)
+
+
+
 number_top_tournaments = 15
 tournament_container.markdown(
     f"""
-    Let's pick the top {number_top_tournaments} tournaments with the most participants in history!
+    ---
+    In the data we can see a few outliers. These are the tournaments that managed to draw the highest participation ever. Let's pick the top {number_top_tournaments} tournaments with the most participants in history and see what they were!
     """
 )
 
@@ -562,38 +592,38 @@ demographics_container.pyplot(fig)
 
 demographics_container.markdown("---")
 
-new_container = st.container()
-new_container.markdown("### Tournament matches played over years and months")
-fig, ax = plt.subplots()
+# new_container = st.container()
+# new_container.markdown("### Tournament matches played over years and months")
+# fig, ax = plt.subplots()
 
-tournaments_months_weeks = (
-    tournaments_df.groupby(by=["Month", "Year"])
-    .sum()[["NumMatches"]]
-    .reset_index()
-    .pivot("Year", "Month", "NumMatches")
-    .fillna(0)
-    .astype(int)
-)
+# tournaments_months_weeks = (
+#     tournaments_df.groupby(by=["Month", "Year"])
+#     .sum()[["NumMatches"]]
+#     .reset_index()
+#     .pivot("Year", "Month", "NumMatches")
+#     .fillna(0)
+#     .astype(int)
+# )
 
-matches_months_weeks = (
-    matches_df.groupby(by=["Month", "Weekday"])
-    .count()[["MatchDuration"]]
-    .reset_index()
-    .pivot("Weekday", "Month", "MatchDuration")
-    .fillna(0)
-    .astype(int)
-)
+# matches_months_weeks = (
+#     matches_df.groupby(by=["Month", "Weekday"])
+#     .count()[["MatchDuration"]]
+#     .reset_index()
+#     .pivot("Weekday", "Month", "MatchDuration")
+#     .fillna(0)
+#     .astype(int)
+# )
 
-sn.heatmap(
-    tournaments_months_weeks,
-    linewidths=1,
-    cmap=sn.color_palette("rocket_r", as_cmap=True),
-    linecolor="white",
-    square=False,
-    fmt="d",
-    annot=True,
-)
-new_container.pyplot(fig)
+# sn.heatmap(
+#     tournaments_months_weeks,
+#     linewidths=1,
+#     cmap=sn.color_palette("rocket_r", as_cmap=True),
+#     linecolor="white",
+#     square=False,
+#     fmt="d",
+#     annot=True,
+# )
+# new_container.pyplot(fig)
 
 
 # profiler.stop()
