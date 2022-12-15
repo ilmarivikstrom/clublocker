@@ -33,7 +33,7 @@ streamlit_style = """
 			}
 			</style>
 			"""
-skip_data_fetch = False
+skip_data_fetch = True
 st.markdown(streamlit_style, unsafe_allow_html=True)
 custom_css()
 plt.style.use("ggplot")
