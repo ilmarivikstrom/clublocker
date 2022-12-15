@@ -33,7 +33,7 @@ streamlit_style = """
 			}
 			</style>
 			"""
-skip_data_fetch = True
+skip_data_fetch = False
 st.markdown(streamlit_style, unsafe_allow_html=True)
 custom_css()
 plt.style.use("ggplot")
@@ -243,7 +243,8 @@ tournament_container.markdown(
 
 top_highest_tournaments_df = tournaments_df.sort_values(by=["NumPlayers"], ascending=False).head(number_top_tournaments)[["TournamentName", "Year", "NumPlayers", "covid"]]
 tournament_container.markdown(hide_table_row_index(), unsafe_allow_html=True)
-tournament_container.table(top_highest_tournaments_df)
+
+tournament_container.table(top_highest_tournaments_df.style.background_gradient(cmap='Greens', low=0.5, subset=["NumPlayers"]))
 
 tournament_container.markdown(
     f"""
@@ -257,7 +258,7 @@ tournament_container.markdown(
 )
 
 top_lowest_tournaments_df = tournaments_df.sort_values(by=["NumPlayers"], ascending=True).head(number_top_tournaments)[["TournamentName", "Year", "NumPlayers", "covid"]]
-tournament_container.table(top_lowest_tournaments_df)
+tournament_container.table(top_lowest_tournaments_df.style.background_gradient(cmap='Reds_r', high=0.5, subset=["NumPlayers"]))
 
 tournament_container.markdown(
     f"""
@@ -269,6 +270,76 @@ tournament_container.markdown(
 
 
 tournament_container.markdown("---")
+
+
+
+
+
+
+player_activity_container = st.container()
+player_activity_container.markdown("### Player activity analysis")
+unique_player_names = list(
+    set(matches_df["WinnerPlayer"].values.tolist())
+    | set(matches_df["LoserPlayer"].values.tolist())
+)
+
+active_players_df = (
+    pd.concat(
+        [
+            matches_df.groupby(by=["LoserPlayer"]).count().reset_index(names="Player"),
+            matches_df.groupby(by=["WinnerPlayer"]).count().reset_index(names="Player"),
+        ]
+    )
+    .groupby(by="Player")
+    .sum()
+    .sort_values(by="matchid", ascending=False)
+    .reset_index()[["Player", "WinnerPlayer", "LoserPlayer"]]
+)
+active_players_df["TotalMatches"] = (
+    active_players_df["WinnerPlayer"] + active_players_df["LoserPlayer"]
+)
+active_players_df[["WinnerPlayer", "LoserPlayer"]] = active_players_df[
+    ["LoserPlayer", "WinnerPlayer"]
+]
+
+show_results = 20
+fig, ax = plt.subplots()
+sn.barplot(
+    data=active_players_df.head(show_results),
+    x="TotalMatches",
+    y="Player",
+    palette=sn.color_palette("husl", show_results * 20),
+)
+ax.set_xlabel("Number of matches played")
+ax.set_ylabel("Player name")
+
+player_activity_container.markdown("WIP")
+player_activity_container.pyplot(fig)
+
+
+player_activity_container.markdown("The most common matchups")
+common_matchups_df = (
+    matches_df.groupby(by=["WinnerPlayer", "LoserPlayer"])
+    .count()
+    .sort_values(by="matchid", ascending=False)
+    .reset_index(names=["Player1", "Player2"])[["Player1", "Player2", "matchid"]]
+)
+common_matchups_df["Matchup"] = common_matchups_df["Player1"].str.cat(
+    common_matchups_df["Player2"], sep=" vs. "
+)
+fig, ax = plt.subplots()
+sn.barplot(
+    data=common_matchups_df.head(show_results),
+    x="matchid",
+    y="Matchup",
+    palette=sn.color_palette("husl", show_results * 20),
+)
+ax.set_xlabel("Number of matchups")
+ax.set_ylabel("Players")
+player_activity_container.pyplot(fig)
+
+player_activity_container.markdown("---")
+
 
 
 wip_container = st.container()
@@ -368,69 +439,7 @@ match_container.pyplot(fig)
 match_container.markdown("---")
 
 
-player_activity_container = st.container()
-player_activity_container.markdown("### Player activity analysis")
-unique_player_names = list(
-    set(matches_df["WinnerPlayer"].values.tolist())
-    | set(matches_df["LoserPlayer"].values.tolist())
-)
 
-active_players_df = (
-    pd.concat(
-        [
-            matches_df.groupby(by=["LoserPlayer"]).count().reset_index(names="Player"),
-            matches_df.groupby(by=["WinnerPlayer"]).count().reset_index(names="Player"),
-        ]
-    )
-    .groupby(by="Player")
-    .sum()
-    .sort_values(by="matchid", ascending=False)
-    .reset_index()[["Player", "WinnerPlayer", "LoserPlayer"]]
-)
-active_players_df["TotalMatches"] = (
-    active_players_df["WinnerPlayer"] + active_players_df["LoserPlayer"]
-)
-active_players_df[["WinnerPlayer", "LoserPlayer"]] = active_players_df[
-    ["LoserPlayer", "WinnerPlayer"]
-]
-
-show_results = 20
-fig, ax = plt.subplots()
-sn.barplot(
-    data=active_players_df.head(show_results),
-    x="TotalMatches",
-    y="Player",
-    palette=sn.color_palette("husl", show_results * 20),
-)
-ax.set_xlabel("Number of matches played")
-ax.set_ylabel("Player name")
-
-player_activity_container.markdown("WIP")
-player_activity_container.pyplot(fig)
-
-
-player_activity_container.markdown("The most common matchups")
-common_matchups_df = (
-    matches_df.groupby(by=["WinnerPlayer", "LoserPlayer"])
-    .count()
-    .sort_values(by="matchid", ascending=False)
-    .reset_index(names=["Player1", "Player2"])[["Player1", "Player2", "matchid"]]
-)
-common_matchups_df["Matchup"] = common_matchups_df["Player1"].str.cat(
-    common_matchups_df["Player2"], sep=" vs. "
-)
-fig, ax = plt.subplots()
-sn.barplot(
-    data=common_matchups_df.head(show_results),
-    x="matchid",
-    y="Matchup",
-    palette=sn.color_palette("husl", show_results * 20),
-)
-ax.set_xlabel("Number of matchups")
-ax.set_ylabel("Players")
-player_activity_container.pyplot(fig)
-
-player_activity_container.markdown("---")
 
 
 player_container = st.container()
@@ -449,12 +458,14 @@ search_results["Win"] = search_results["WinnerPlayer"] == name
 search_results = search_results.sort_values(by=["matchid"], ascending=False)
 player_container.markdown("Here's a tabular view of the selected player:")
 player_container.markdown(hide_table_row_index(), unsafe_allow_html=True)
+
 player_container.table(
     search_results[
-        ["WinnerPlayer", "LoserPlayer", "Score_Short", "Rallies", "MatchDatePandas"]
-    ],
+        ["WinnerPlayer", "LoserPlayer", "Score_Short", "Rallies", "MatchDatePandas", "TournamentName"]
+    ]
 )
 player_container.caption(f"Found {len(search_results)} matches for player {name}")
+
 
 
 player_container.markdown("#### Wins and losses for the selected player:")

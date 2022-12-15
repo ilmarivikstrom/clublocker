@@ -55,7 +55,7 @@ def load_matches(skip: bool, tournaments_df: pd.DataFrame) -> pd.DataFrame:
                     tournaments_df, file_name=f"matches_{str(current_date)}.pkl"
                 )
         matches_df_dirty = _load_pickle(file_name=f"matches_{str(current_date)}.pkl")
-    matches_df = _preprocess_matches(matches_df_dirty)
+    matches_df = _preprocess_matches(matches_df_dirty, tournaments_df)
     return matches_df
 
 
@@ -117,8 +117,7 @@ def _preprocess_rankings(rankings_df_dirty: pd.DataFrame) -> pd.DataFrame:
     return rankings_df
 
 
-@st.experimental_memo
-def _preprocess_matches(matches_df_dirty):
+def _preprocess_matches(matches_df_dirty, tournaments_df):
     # Match data preprocessing.
     matches_df_dirty["hPlayerName"] = (
         matches_df_dirty["hPlayerName"]
@@ -134,7 +133,7 @@ def _preprocess_matches(matches_df_dirty):
         .str.join(",")
         .str.replace(",", " ")
     )
-    matches_df_dirty["MatchDatePandas"] = pd.to_datetime(matches_df_dirty["MatchDate"])
+    matches_df_dirty["MatchDatePandas"] = (pd.to_datetime(matches_df_dirty["MatchDate"] + " " + matches_df_dirty["StartTime"]))
     matches_df_dirty["Game1"] = (
         (matches_df_dirty["wset1"] + matches_df_dirty["oset1"]).fillna(0).astype(int)
     )
@@ -174,10 +173,10 @@ def _preprocess_matches(matches_df_dirty):
         matches_df_dirty["matchEnd"]
     ) - pd.to_datetime(matches_df_dirty["matchStart"])
     matches_df_dirty = matches_df_dirty.loc[
-        matches_df_dirty["MatchDuration"] < pd.Timedelta(2, "h")
+        matches_df_dirty["MatchDuration"] < pd.Timedelta(5, "h")
     ]
     matches_df_dirty = matches_df_dirty.loc[
-        matches_df_dirty["MatchDuration"] > pd.Timedelta(4, "m")
+        matches_df_dirty["MatchDuration"] > pd.Timedelta(0, "m")
     ]
     matches_df_dirty["MatchDuration"] = (
         matches_df_dirty["MatchDuration"].astype("timedelta64[m]").astype(int)
@@ -230,6 +229,7 @@ def _preprocess_matches(matches_df_dirty):
     matches_df_dirty["Month"] = [x.month for x in matches_df_dirty["MatchDatePandas"]]
     matches_df_dirty["Week"] = [x.week for x in matches_df_dirty["MatchDatePandas"]]
     matches_df_dirty.sort_values(by=["MatchDatePandas"], ascending=True, inplace=True)
+    matches_df_dirty = pd.merge(matches_df_dirty, tournaments_df[["TournamentID", "TournamentName"]], how="left", on="TournamentID")
     matches_df = matches_df_dirty
     return matches_df
 
