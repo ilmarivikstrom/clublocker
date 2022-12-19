@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sn
 import streamlit as st
 from pyinstrument import Profiler
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
 from utils.extraction import load_matches, load_rankings, load_tournaments, get_latest_pickle_date
 from utils.general import caption_text, custom_css, convert_df_to_csv, hide_table_row_index
@@ -18,7 +18,7 @@ from utils.styles import *
 # profiler.start()
 
 # Dotenv
-load_dotenv(override=True)
+#load_dotenv(override=True)
 
 # Set display_mode to either "dev" or "prod".
 display_mode = os.getenv("DISPLAYMODE")
