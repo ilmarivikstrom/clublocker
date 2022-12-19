@@ -19,7 +19,7 @@ def hide_table_row_index():
 
 
 def custom_css() -> None:
-    with open("res/squash_wall_dark95_blur3.jpg", "rb") as image:
+    with open("res/neon_court.png", "rb") as image:
         encoded_string = base64.b64encode(image.read())
     st.markdown(
         f"""
@@ -30,9 +30,10 @@ def custom_css() -> None:
     html {{
         font-size: 110%;
     }}
-    .stApp {{
+    [data-testid="stAppViewContainer"] > .main {{
         background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
         background-size: cover;
+        background-attachment: local;
     }}
     [data-testid="stHeader"] {{
         background-color: rgba(0, 0, 0, 0);
@@ -63,7 +64,20 @@ def custom_css() -> None:
     th {{
         background: #000000bb;
     }}
+    footer {{
+        visibility: hidden;
+    }}
+    #MainMenu {{
+        visibility: hidden;
+    }}
+    footer:after {{
+        visibility: visible;
+        content: "Ilmari Vikström - 2022";
+    }}
     </style>
     """,
         unsafe_allow_html=True,
     )
+
+def caption_text(text):
+    return f"<p style='text-align: center; color: #d4d4d4; font-size: 0.8em;'>{text}</p>"
