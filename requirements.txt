@@ -10,3 +10,4 @@ streamlit
 wheel
 graphviz
 pyinstrument
+python-dotenv

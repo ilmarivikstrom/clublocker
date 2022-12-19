@@ -1,4 +1,5 @@
 import datetime as dt
+import os
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -7,13 +8,23 @@ import pandas as pd
 import seaborn as sn
 import streamlit as st
 from pyinstrument import Profiler
+from dotenv import load_dotenv
 
 from utils.extraction import load_matches, load_rankings, load_tournaments, get_latest_pickle_date
-from utils.general import custom_css, convert_df_to_csv, hide_table_row_index
+from utils.general import caption_text, custom_css, convert_df_to_csv, hide_table_row_index
 from utils.styles import *
 
 # profiler = Profiler()
 # profiler.start()
+
+# Dotenv
+load_dotenv(override=True)
+
+# Set display_mode to either "dev" or "prod".
+display_mode = os.getenv("DISPLAYMODE")
+# If not set in env vars, force prod.
+if display_mode == None:
+    display_mode = "prod"
 
 # Basic configurations
 pd.options.mode.chained_assignment = None
@@ -217,7 +228,6 @@ sn.regplot(
     scatter=False,
     order=2,
 )
-ax.set_title("Tournament participation over time")
 ax.set_xlabel("Tournament date")
 ax.set_ylabel("Players in a tournament")
 ax.xaxis.set_major_locator(mdates.YearLocator())
@@ -228,10 +238,11 @@ ax.set_xticklabels(xticks_dates)
 for label in ax.get_xticklabels(which="major"):
     label.set(rotation=30, horizontalalignment="center", fontsize=8)
 tournament_container.pyplot(fig)
+tournament_container.markdown(caption_text("Figure 1", "Tournament participation pre- and post-covid."), unsafe_allow_html=True)
 
 tournament_container.markdown(
     """
-    Looking at the chart we can see a few different things. The first clear observation is that the largest tournaments were held in the pre-covid era. When taking a bit more careful look at the data, we can see the quiet summer breaks and the lockdown months. If we exclude the lockdown periods, the density of the tournament calendar seems to be relatively the same for the whole history.
+    Looking at Figure 1, we can see a few different things. The first clear observation is that the largest tournaments were held in the pre-covid era. When taking a bit more careful look at the data, we can see the quiet summer breaks and the lockdown months. If we exclude the lockdown periods, the density of the tournament calendar seems to be relatively the same for the whole history.
     
     The red line skewering the graph is a 2nd-order polynomial model fitted on the data. This model shows the general trend of tournament participation. The trend shows the harsh truth, which is that there has been a clear decreasing trend for a long time.
     """
@@ -261,9 +272,15 @@ sn.heatmap(
     linecolor="white",
     square=False,
     fmt="d",
-    annot=True,
+    annot=True
 )
 tournament_container.pyplot(fig)
+tournament_container.markdown(caption_text("Figure 2", "Heatmap of tournament participation."), unsafe_allow_html=True)
+tournament_container.markdown(
+    """
+
+    """
+)
 
 
 
@@ -279,6 +296,7 @@ top_highest_tournaments_df = tournaments_df.sort_values(by=["NumPlayers"], ascen
 tournament_container.markdown(hide_table_row_index(), unsafe_allow_html=True)
 
 tournament_container.table(top_highest_tournaments_df.rename(columns={"TournamentName": "Tournament", "NumPlayers": "Players", "covid": "Covid"}).style.background_gradient(cmap='Greens', low=0.5, subset=["Players"]))
+tournament_container.markdown(caption_text("Table 1", "Tournaments with highest participation."), unsafe_allow_html=True)
 
 tournament_container.markdown(
     f"""
@@ -293,6 +311,7 @@ tournament_container.markdown(
 
 top_lowest_tournaments_df = tournaments_df.sort_values(by=["NumPlayers"], ascending=True).head(number_top_tournaments)[["TournamentName", "Year", "NumPlayers", "covid"]]
 tournament_container.table(top_lowest_tournaments_df.rename(columns={"TournamentName": "Tournament", "NumPlayers": "Players", "covid": "Covid"}).style.background_gradient(cmap='Reds_r', high=0.5, subset=["Players"]))
+tournament_container.markdown(caption_text("Table 2", "Tournaments with lowest participation."), unsafe_allow_html=True)
 
 tournament_container.markdown(
     f"""
@@ -359,6 +378,7 @@ ax.set_xlabel("Number of played matches")
 ax.set_ylabel("Player name")
 
 player_activity_container.pyplot(fig)
+player_activity_container.markdown(caption_text(f"Figure 3", f"Top {show_results} most active players."), unsafe_allow_html=True)
 
 
 player_activity_container.markdown(
@@ -386,173 +406,21 @@ sn.barplot(
 ax.set_xlabel("Number of played matches")
 ax.set_ylabel("Matchup")
 player_activity_container.pyplot(fig)
+player_activity_container.markdown(caption_text("Figure 4", f"Top {show_results} toughest rivalries."), unsafe_allow_html=True)
 
 player_activity_container.markdown("---")
 
 
 
-wip_container = st.container()
-wip_container.markdown("---")
-wip_container.markdown("# Everything below is under construction!")
-wip_container.markdown("---")
-wip_container.markdown("---")
-
-match_container = st.container()
-
-match_container.markdown("## Overview of the match data")
-match_container.markdown("")
-match_container.markdown("### Match length distribution")
-match_container.markdown("")
-fig, ax = plt.subplots()
-fig.tight_layout()
-ax.set_xlabel("Number of rallies")
-ax.set_ylabel("Match count")
-sn.histplot(
-    ax=ax,
-    data=matches_df,
-    x="Rallies",
-    hue="NumberOfGames",
-    binwidth=1,
-    multiple="stack",
-    legend=True,
-    palette=custom_palette_cmap,
-)
-match_container.pyplot(fig)
-
-
-match_container.markdown("")
-fig, ax = plt.subplots()
-ax.set_xlabel("Match duration (minutes)")
-ax.set_ylabel("Number of rallies")
-sn.scatterplot(
-    data=matches_df,
-    x="MatchDuration",
-    y="Rallies",
-    hue="NumberOfGames",
-    alpha=0.2,
-    palette=custom_palette_cmap,
-    linewidth=0,
-)
-match_container.pyplot(fig)
-
-match_container.markdown("")
-fig, ax = plt.subplots()
-fig.tight_layout()
-sn.histplot(
-    ax=ax,
-    data=matches_df,
-    x="MatchDuration",
-    hue="NumberOfGames",
-    binwidth=1,
-    multiple="stack",
-    legend=True,
-    palette=custom_palette_cmap,
-)
-ax.set_xlabel("Match duration (minutes)")
-match_container.pyplot(fig)
-
-
-match_container.markdown("---")
-
-
-match_container.markdown("### Match length visualization for a selected tournament")
-selected_tournament = match_container.selectbox(
-    "Select the tournament name",
-    tournaments_df["TournamentName"].loc[tournaments_df["Type"] == "results"],
-)
-selected_tournament_id = tournaments_df.loc[
-    tournaments_df["TournamentName"] == selected_tournament
-]["TournamentID"].values[0]
-selected_matches = matches_df.loc[matches_df["TournamentID"] == selected_tournament_id]
-match_container.markdown(
-    f"Selected {len(selected_matches)} matches from {selected_tournament}"
-)
-fig, ax = plt.subplots()
-fig.tight_layout()
-ax.set_xlabel("Time")
-ax.set_ylabel("Number of Rallies")
-matches_subset = matches_df.loc[matches_df["TournamentID"] == selected_tournament_id][
-    ["matchStart", "Rallies"]
-].dropna()
-matches_subset = matches_subset.loc[
-    pd.to_datetime(matches_subset["matchStart"])
-    > pd.to_datetime("01-01-2018T00:00:00.000Z")
-]
-sn.scatterplot(
-    x=pd.to_datetime(matches_subset["matchStart"]),
-    y=matches_subset["Rallies"],
-    hue=matches_subset["Rallies"],
-    palette=custom_palette_cmap,
-)
-for label in ax.get_xticklabels(which="major"):
-    label.set(rotation=30, horizontalalignment="center", fontsize=8)
-match_container.pyplot(fig)
-match_container.markdown("---")
-
-
-
-
-
-player_container = st.container()
-
-player_container.markdown("### Individual player statistics based on tournament data")
-unique_player_names = np.sort(
-    pd.unique(matches_df[["vPlayerName", "hPlayerName"]].values.ravel("K"))
-)
-unique_player_names = np.concatenate((["Select a player"], unique_player_names))
-name = player_container.selectbox("", unique_player_names)
-search_results = matches_df.loc[
-    matches_df["vPlayerName"].str.contains(name, case=False)
-    | matches_df["hPlayerName"].str.contains(name, case=False)
-]
-search_results["Win"] = search_results["WinnerPlayer"] == name
-search_results = search_results.sort_values(by=["matchid"], ascending=False)
-player_container.markdown("Here's a tabular view of the selected player:")
-player_container.markdown(hide_table_row_index(), unsafe_allow_html=True)
-
-player_container.table(
-    search_results[
-        ["WinnerPlayer", "LoserPlayer", "Score_Short", "Rallies", "MatchDatePandas", "TournamentName"]
-    ]
-)
-player_container.caption(f"Found {len(search_results)} matches for player {name}")
-
-
-
-player_container.markdown("#### Wins and losses for the selected player:")
-fig, ax = plt.subplots()
-fig.tight_layout()
-# HACK: Work around the palette bug when there's not enough categories:
-hack_palette = [custom_palette[0], custom_palette[-1]]
-if len(search_results["Win"].unique()) == 1:
-    hack_palette = [custom_palette[int((len(custom_palette) - 1) / 2)]]
-sn.scatterplot(
-    data=search_results,
-    y="Rallies",
-    x="MatchDatePandas",
-    hue="Win",
-    palette=hack_palette,
-)
-ax.set_xlabel("Date")
-ax.set_ylabel("Number of rallies")
-for label in ax.get_xticklabels(which="major"):
-    label.set(rotation=30, horizontalalignment="center", fontsize=8)
-player_container.pyplot(fig)
-
-player_container.markdown("---")
 
 
 demographics_container = st.container()
-demographics_container.markdown("### Player demographics")
-demographics_container.markdown("Age breakdown")
-MULTIPLE_TYPE = demographics_container.radio("Chart type", ("Stacked", "Blended"))
-if MULTIPLE_TYPE == "Stacked":
-    MULTIPLE_TYPE = "stack"
-else:
-    MULTIPLE_TYPE = "layer"
-bin_width = demographics_container.select_slider(
-    "Specify the bin size", options=[1, 2, 5, 10, 15, 20], value=2
-)
+demographics_container.markdown("#### 4.3 Player demographics - Age")
+MULTIPLE_TYPE = "stack"
+bin_width = 2
+#bin_width = demographics_container.select_slider(
+#    "Specify the bin size", options=[1, 2, 5, 10, 15, 20], value=2
+#)
 hack_palette = [custom_palette[0], custom_palette[-1]]
 fig, ax = plt.subplots()
 sn.histplot(
@@ -566,17 +434,19 @@ sn.histplot(
 ax.set_xlim((0, 90))
 ax.set_xlabel("Player age")
 demographics_container.pyplot(fig)
+demographics_container.markdown(caption_text("Figure 5", f"Age distribution of competitive players."), unsafe_allow_html=True)
 
 
-demographics_container.markdown("Ranking as a function of age")
-divisions = demographics_container.multiselect(
-    "Filter players by division", ["All Men", "All Women"], ["All Men", "All Women"]
-)
-start_xlim, end_xlim = demographics_container.select_slider(
-    "Specify the age range",
-    options=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90],
-    value=(0, 90),
-)
+#divisions = demographics_container.multiselect(
+#    "Filter players by division", ["All Men", "All Women"], ["All Men", "All Women"]
+#)
+divisions = ["All Men", "All Women"]
+#start_xlim, end_xlim = demographics_container.select_slider(
+#    "Specify the age range",
+#    options=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90],
+#    value=(0, 90),
+#)
+start_xlim, end_xlim = (0, 90)
 hack_palette = [custom_palette[0], custom_palette[-1]]
 fig, ax = plt.subplots()
 sn.scatterplot(
@@ -589,41 +459,197 @@ sn.scatterplot(
 )
 ax.set_xlim(start_xlim, end_xlim)
 demographics_container.pyplot(fig)
+demographics_container.markdown(caption_text("Figure 6", "Ranking as a function of age."), unsafe_allow_html=True)
 
 demographics_container.markdown("---")
 
-# new_container = st.container()
-# new_container.markdown("### Tournament matches played over years and months")
-# fig, ax = plt.subplots()
 
-# tournaments_months_weeks = (
-#     tournaments_df.groupby(by=["Month", "Year"])
-#     .sum()[["NumMatches"]]
-#     .reset_index()
-#     .pivot("Year", "Month", "NumMatches")
-#     .fillna(0)
-#     .astype(int)
-# )
 
-# matches_months_weeks = (
-#     matches_df.groupby(by=["Month", "Weekday"])
-#     .count()[["MatchDuration"]]
-#     .reset_index()
-#     .pivot("Weekday", "Month", "MatchDuration")
-#     .fillna(0)
-#     .astype(int)
-# )
+# Hide the following unless in "dev" mode.
+if display_mode != "prod":
+    wip_container = st.container()
+    wip_container.markdown("---")
+    wip_container.markdown("# Everything below is under construction!")
+    wip_container.markdown("---")
+    wip_container.markdown("---")
 
-# sn.heatmap(
-#     tournaments_months_weeks,
-#     linewidths=1,
-#     cmap=sn.color_palette("rocket_r", as_cmap=True),
-#     linecolor="white",
-#     square=False,
-#     fmt="d",
-#     annot=True,
-# )
-# new_container.pyplot(fig)
+    match_container = st.container()
+
+    match_container.markdown("## Overview of the match data")
+    match_container.markdown("")
+    match_container.markdown("### Match length distribution")
+    match_container.markdown("")
+    fig, ax = plt.subplots()
+    fig.tight_layout()
+    ax.set_xlabel("Number of rallies")
+    ax.set_ylabel("Match count")
+    sn.histplot(
+        ax=ax,
+        data=matches_df,
+        x="Rallies",
+        hue="NumberOfGames",
+        binwidth=1,
+        multiple="stack",
+        legend=True,
+        palette=custom_palette_cmap,
+    )
+    match_container.pyplot(fig)
+
+
+    match_container.markdown("")
+    fig, ax = plt.subplots()
+    ax.set_xlabel("Match duration (minutes)")
+    ax.set_ylabel("Number of rallies")
+    sn.scatterplot(
+        data=matches_df,
+        x="MatchDuration",
+        y="Rallies",
+        hue="NumberOfGames",
+        alpha=0.2,
+        palette=custom_palette_cmap,
+        linewidth=0,
+    )
+    match_container.pyplot(fig)
+
+    match_container.markdown("")
+    fig, ax = plt.subplots()
+    fig.tight_layout()
+    sn.histplot(
+        ax=ax,
+        data=matches_df,
+        x="MatchDuration",
+        hue="NumberOfGames",
+        binwidth=1,
+        multiple="stack",
+        legend=True,
+        palette=custom_palette_cmap,
+    )
+    ax.set_xlabel("Match duration (minutes)")
+    match_container.pyplot(fig)
+
+
+    match_container.markdown("---")
+
+
+    match_container.markdown("### Match length visualization for a selected tournament")
+    selected_tournament = match_container.selectbox(
+        "Select the tournament name",
+        tournaments_df["TournamentName"].loc[tournaments_df["Type"] == "results"],
+    )
+    selected_tournament_id = tournaments_df.loc[
+        tournaments_df["TournamentName"] == selected_tournament
+    ]["TournamentID"].values[0]
+    selected_matches = matches_df.loc[matches_df["TournamentID"] == selected_tournament_id]
+    match_container.markdown(
+        f"Selected {len(selected_matches)} matches from {selected_tournament}"
+    )
+    fig, ax = plt.subplots()
+    fig.tight_layout()
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Number of Rallies")
+    matches_subset = matches_df.loc[matches_df["TournamentID"] == selected_tournament_id][
+        ["matchStart", "Rallies"]
+    ].dropna()
+    matches_subset = matches_subset.loc[
+        pd.to_datetime(matches_subset["matchStart"])
+        > pd.to_datetime("01-01-2018T00:00:00.000Z")
+    ]
+    sn.scatterplot(
+        x=pd.to_datetime(matches_subset["matchStart"]),
+        y=matches_subset["Rallies"],
+        hue=matches_subset["Rallies"],
+        palette=custom_palette_cmap,
+    )
+    for label in ax.get_xticklabels(which="major"):
+        label.set(rotation=30, horizontalalignment="center", fontsize=8)
+    match_container.pyplot(fig)
+    match_container.markdown("---")
+
+
+
+
+
+    player_container = st.container()
+
+    player_container.markdown("### Individual player statistics based on tournament data")
+    unique_player_names = np.sort(
+        pd.unique(matches_df[["vPlayerName", "hPlayerName"]].values.ravel("K"))
+    )
+    unique_player_names = np.concatenate((["Select a player"], unique_player_names))
+    name = player_container.selectbox("", unique_player_names)
+    search_results = matches_df.loc[
+        matches_df["vPlayerName"].str.contains(name, case=False)
+        | matches_df["hPlayerName"].str.contains(name, case=False)
+    ]
+    if name != "Select a player":
+        search_results["Win"] = search_results["WinnerPlayer"] == name
+        search_results = search_results.sort_values(by=["matchid"], ascending=False)
+        player_container.markdown(f"Here's a tabular view of {name}'s matches:")
+        player_container.markdown(hide_table_row_index(), unsafe_allow_html=True)
+
+        player_container.table(
+            search_results[
+                ["WinnerPlayer", "LoserPlayer", "Score_Short", "Rallies", "MatchDatePandas", "TournamentName"]
+            ]
+        )
+        player_container.caption(f"Found {len(search_results)} matches for {name}")
+
+        player_container.markdown(f"#### {name}'s wins and losses over time:")
+        fig, ax = plt.subplots()
+        fig.tight_layout()
+        # HACK: Work around the palette bug when there's not enough categories:
+        hack_palette = [custom_palette[0], custom_palette[-1]]
+        if len(search_results["Win"].unique()) == 1:
+            hack_palette = [custom_palette[int((len(custom_palette) - 1) / 2)]]
+        sn.scatterplot(
+            data=search_results,
+            y="Rallies",
+            x="MatchDatePandas",
+            hue="Win",
+            palette=hack_palette,
+            legend=True
+        )
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Number of rallies")
+        for label in ax.get_xticklabels(which="major"):
+            label.set(rotation=30, horizontalalignment="center", fontsize=8)
+        player_container.pyplot(fig)
+
+    player_container.markdown("---")
+
+
+    new_container = st.container()
+    new_container.markdown("### Tournament matches played over years and months")
+    fig, ax = plt.subplots()
+
+    tournaments_months_weeks = (
+        tournaments_df.groupby(by=["Month", "Year"])
+        .sum()[["NumMatches"]]
+        .reset_index()
+        .pivot("Year", "Month", "NumMatches")
+        .fillna(0)
+        .astype(int)
+    )
+
+    matches_months_weeks = (
+        matches_df.groupby(by=["Month", "Weekday"])
+        .count()[["MatchDuration"]]
+        .reset_index()
+        .pivot("Weekday", "Month", "MatchDuration")
+        .fillna(0)
+        .astype(int)
+    )
+
+    sn.heatmap(
+        tournaments_months_weeks,
+        linewidths=1,
+        cmap=sn.color_palette("rocket_r", as_cmap=True),
+        linecolor="white",
+        square=False,
+        fmt="d",
+        annot=True,
+    )
+    new_container.pyplot(fig)
 
 
 # profiler.stop()

@@ -79,5 +79,5 @@ def custom_css() -> None:
         unsafe_allow_html=True,
     )
 
-def caption_text(text):
-    return f"<p style='text-align: center; color: #d4d4d4; font-size: 0.8em;'>{text}</p>"
+def caption_text(name, text):
+    return f"<p style='text-align: center; color: #d4d4d4; font-size: 0.8em;'><strong>{name}</strong>   {text}</p>"
