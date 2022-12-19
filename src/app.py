@@ -151,7 +151,7 @@ st.sidebar.markdown(
       - [4.2 The toughest rivalries](#4-2-the-toughest-rivalries)
     - [5. Player demographics](#5-player-demographics)
       - [5.1 Age of the player base](#5-1-age-of-the-player-base)
-      - [5.2 Relationship of player's age and ranking](#5-2-relationship-of-player-s-age-and-ranking)
+      - [5.2 Player's age vs. ranking](#5-2-player-s-age-vs-ranking)
 
 
     ---
@@ -441,7 +441,7 @@ demographics_container.pyplot(fig)
 demographics_container.markdown(caption_text("Figure 5", f"Age distribution of competitive players."), unsafe_allow_html=True)
 
 
-demographics_container.markdown("#### 5.2 Relationship of player's age and ranking")
+demographics_container.markdown("#### 5.2 Player's age vs. ranking")
 #divisions = demographics_container.multiselect(
 #    "Filter players by division", ["All Men", "All Women"], ["All Men", "All Women"]
 #)
