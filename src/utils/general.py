@@ -19,7 +19,7 @@ def hide_table_row_index():
 
 
 def custom_css() -> None:
-    with open("res/neon_court.png", "rb") as image:
+    with open("res/neon_court2.png", "rb") as image:
         encoded_string = base64.b64encode(image.read())
     st.markdown(
         f"""
