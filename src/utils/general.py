@@ -100,7 +100,6 @@ def custom_css() -> None:
     )
 
 
-
 def insert_background() -> None:
     with open("res/neon_court2.png", "rb") as image:
         encoded_string = base64.b64encode(image.read())

@@ -8,17 +8,29 @@ import pandas as pd
 import seaborn as sn
 import streamlit as st
 from pyinstrument import Profiler
-#from dotenv import load_dotenv
 
-from utils.extraction import load_matches, load_rankings, load_tournaments, get_latest_pickle_date
-from utils.general import caption_text, custom_css, convert_df_to_csv, hide_table_row_index, insert_background
+# from dotenv import load_dotenv
+
+from utils.extraction import (
+    load_matches,
+    load_rankings,
+    load_tournaments,
+    get_latest_pickle_date,
+)
+from utils.general import (
+    caption_text,
+    custom_css,
+    convert_df_to_csv,
+    hide_table_row_index,
+    insert_background,
+)
 from utils.styles import *
 
 # profiler = Profiler()
 # profiler.start()
 
 # Dotenv
-#load_dotenv(override=True)
+# load_dotenv(override=True)
 
 # Set display_mode to either "dev" or "prod".
 display_mode = os.getenv("DISPLAYMODE")
@@ -138,7 +150,6 @@ loading_container.success("⬇ All data has been fetched. Let's move on! ⬇")
 loading_container.markdown("---")
 
 
-
 st.sidebar.markdown(
     """
     # Table of Contents
@@ -241,7 +252,10 @@ ax.set_xticklabels(xticks_dates)
 for label in ax.get_xticklabels(which="major"):
     label.set(rotation=30, horizontalalignment="center", fontsize=8)
 tournament_container.pyplot(fig)
-tournament_container.markdown(caption_text("Figure 1", "Tournament participation pre- and post-covid."), unsafe_allow_html=True)
+tournament_container.markdown(
+    caption_text("Figure 1", "Tournament participation pre- and post-covid."),
+    unsafe_allow_html=True,
+)
 
 tournament_container.markdown(
     """
@@ -275,16 +289,18 @@ sn.heatmap(
     linecolor="white",
     square=False,
     fmt="d",
-    annot=True
+    annot=True,
 )
 tournament_container.pyplot(fig)
-tournament_container.markdown(caption_text("Figure 2", "Heatmap of tournament participation."), unsafe_allow_html=True)
+tournament_container.markdown(
+    caption_text("Figure 2", "Heatmap of tournament participation."),
+    unsafe_allow_html=True,
+)
 tournament_container.markdown(
     """
 
     """
 )
-
 
 
 number_top_tournaments = 15
@@ -295,11 +311,24 @@ tournament_container.markdown(
     """
 )
 
-top_highest_tournaments_df = tournaments_df.sort_values(by=["NumPlayers"], ascending=False).head(number_top_tournaments)[["TournamentName", "Year", "NumPlayers", "covid"]]
+top_highest_tournaments_df = tournaments_df.sort_values(
+    by=["NumPlayers"], ascending=False
+).head(number_top_tournaments)[["TournamentName", "Year", "NumPlayers", "covid"]]
 tournament_container.markdown(hide_table_row_index(), unsafe_allow_html=True)
 
-tournament_container.table(top_highest_tournaments_df.rename(columns={"TournamentName": "Tournament", "NumPlayers": "Players", "covid": "Covid"}).style.background_gradient(cmap='Greens', low=0.5, subset=["Players"]))
-tournament_container.markdown(caption_text("Table 1", "Tournaments with highest participation."), unsafe_allow_html=True)
+tournament_container.table(
+    top_highest_tournaments_df.rename(
+        columns={
+            "TournamentName": "Tournament",
+            "NumPlayers": "Players",
+            "covid": "Covid",
+        }
+    ).style.background_gradient(cmap="Greens", low=0.5, subset=["Players"])
+)
+tournament_container.markdown(
+    caption_text("Table 1", "Tournaments with highest participation."),
+    unsafe_allow_html=True,
+)
 
 tournament_container.markdown(
     f"""
@@ -312,9 +341,22 @@ tournament_container.markdown(
     """
 )
 
-top_lowest_tournaments_df = tournaments_df.sort_values(by=["NumPlayers"], ascending=True).head(number_top_tournaments)[["TournamentName", "Year", "NumPlayers", "covid"]]
-tournament_container.table(top_lowest_tournaments_df.rename(columns={"TournamentName": "Tournament", "NumPlayers": "Players", "covid": "Covid"}).style.background_gradient(cmap='Reds_r', high=0.5, subset=["Players"]))
-tournament_container.markdown(caption_text("Table 2", "Tournaments with lowest participation."), unsafe_allow_html=True)
+top_lowest_tournaments_df = tournaments_df.sort_values(
+    by=["NumPlayers"], ascending=True
+).head(number_top_tournaments)[["TournamentName", "Year", "NumPlayers", "covid"]]
+tournament_container.table(
+    top_lowest_tournaments_df.rename(
+        columns={
+            "TournamentName": "Tournament",
+            "NumPlayers": "Players",
+            "covid": "Covid",
+        }
+    ).style.background_gradient(cmap="Reds_r", high=0.5, subset=["Players"])
+)
+tournament_container.markdown(
+    caption_text("Table 2", "Tournaments with lowest participation."),
+    unsafe_allow_html=True,
+)
 
 tournament_container.markdown(
     f"""
@@ -327,7 +369,6 @@ tournament_container.markdown(
 
 
 tournament_container.markdown("---")
-
 
 
 player_activity_container = st.container()
@@ -381,7 +422,10 @@ ax.set_xlabel("Number of played matches")
 ax.set_ylabel("Player name")
 
 player_activity_container.pyplot(fig)
-player_activity_container.markdown(caption_text(f"Figure 3", f"Top {show_results} most active players."), unsafe_allow_html=True)
+player_activity_container.markdown(
+    caption_text(f"Figure 3", f"Top {show_results} most active players."),
+    unsafe_allow_html=True,
+)
 
 
 player_activity_container.markdown(
@@ -409,12 +453,12 @@ sn.barplot(
 ax.set_xlabel("Number of played matches")
 ax.set_ylabel("Matchup")
 player_activity_container.pyplot(fig)
-player_activity_container.markdown(caption_text("Figure 4", f"Top {show_results} toughest rivalries."), unsafe_allow_html=True)
+player_activity_container.markdown(
+    caption_text("Figure 4", f"Top {show_results} toughest rivalries."),
+    unsafe_allow_html=True,
+)
 
 player_activity_container.markdown("---")
-
-
-
 
 
 demographics_container = st.container()
@@ -422,15 +466,15 @@ demographics_container.markdown("# 5. Player demographics")
 demographics_container.markdown("#### 5.1 Age of the player base")
 MULTIPLE_TYPE = "stack"
 bin_width = 2
-#bin_width = demographics_container.select_slider(
+# bin_width = demographics_container.select_slider(
 #    "Specify the bin size", options=[1, 2, 5, 10, 15, 20], value=2
-#)
+# )
 hack_palette = [custom_palette[0], custom_palette[-1]]
 fig, ax = plt.subplots()
 sn.histplot(
-    data=rankings_df,
+    data=rankings_df.rename(columns={"division": "Category"}),
     x="age",
-    hue="division",
+    hue="Category",
     multiple=MULTIPLE_TYPE,
     binwidth=bin_width,
     palette=hack_palette,
@@ -438,36 +482,42 @@ sn.histplot(
 ax.set_xlim((0, 90))
 ax.set_xlabel("Player age")
 demographics_container.pyplot(fig)
-demographics_container.markdown(caption_text("Figure 5", f"Age distribution of competitive players."), unsafe_allow_html=True)
+demographics_container.markdown(
+    caption_text("Figure 5", f"Age distribution of competitive players."),
+    unsafe_allow_html=True,
+)
 
 
 demographics_container.markdown("#### 5.2 Player's age vs. ranking")
-#divisions = demographics_container.multiselect(
+# divisions = demographics_container.multiselect(
 #    "Filter players by division", ["All Men", "All Women"], ["All Men", "All Women"]
-#)
+# )
 divisions = ["All Men", "All Women"]
-#start_xlim, end_xlim = demographics_container.select_slider(
+# start_xlim, end_xlim = demographics_container.select_slider(
 #    "Specify the age range",
 #    options=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90],
 #    value=(0, 90),
-#)
+# )
 start_xlim, end_xlim = (0, 90)
 hack_palette = [custom_palette[0], custom_palette[-1]]
 fig, ax = plt.subplots()
 sn.scatterplot(
-    data=rankings_df.loc[rankings_df["division"].isin(divisions)],
+    data=rankings_df.rename(columns={"division": "Category"}).loc[
+        rankings_df.rename(columns={"division": "Category"})["Category"].isin(divisions)
+    ],
     x="age",
     y="ranking",
-    hue="division",
+    hue="Category",
     alpha=0.5,
     palette=hack_palette,
 )
 ax.set_xlim(start_xlim, end_xlim)
 demographics_container.pyplot(fig)
-demographics_container.markdown(caption_text("Figure 6", "Ranking as a function of age."), unsafe_allow_html=True)
+demographics_container.markdown(
+    caption_text("Figure 6", "Ranking as a function of age."), unsafe_allow_html=True
+)
 
 demographics_container.markdown("---")
-
 
 
 # Hide the following unless in "dev" mode.
@@ -500,7 +550,6 @@ if display_mode != "prod":
     )
     match_container.pyplot(fig)
 
-
     match_container.markdown("")
     fig, ax = plt.subplots()
     ax.set_xlabel("Match duration (minutes)")
@@ -532,9 +581,7 @@ if display_mode != "prod":
     ax.set_xlabel("Match duration (minutes)")
     match_container.pyplot(fig)
 
-
     match_container.markdown("---")
-
 
     match_container.markdown("### Match length visualization for a selected tournament")
     selected_tournament = match_container.selectbox(
@@ -544,7 +591,9 @@ if display_mode != "prod":
     selected_tournament_id = tournaments_df.loc[
         tournaments_df["TournamentName"] == selected_tournament
     ]["TournamentID"].values[0]
-    selected_matches = matches_df.loc[matches_df["TournamentID"] == selected_tournament_id]
+    selected_matches = matches_df.loc[
+        matches_df["TournamentID"] == selected_tournament_id
+    ]
     match_container.markdown(
         f"Selected {len(selected_matches)} matches from {selected_tournament}"
     )
@@ -552,9 +601,9 @@ if display_mode != "prod":
     fig.tight_layout()
     ax.set_xlabel("Time")
     ax.set_ylabel("Number of Rallies")
-    matches_subset = matches_df.loc[matches_df["TournamentID"] == selected_tournament_id][
-        ["matchStart", "Rallies"]
-    ].dropna()
+    matches_subset = matches_df.loc[
+        matches_df["TournamentID"] == selected_tournament_id
+    ][["matchStart", "Rallies"]].dropna()
     matches_subset = matches_subset.loc[
         pd.to_datetime(matches_subset["matchStart"])
         > pd.to_datetime("01-01-2018T00:00:00.000Z")
@@ -570,13 +619,11 @@ if display_mode != "prod":
     match_container.pyplot(fig)
     match_container.markdown("---")
 
-
-
-
-
     player_container = st.container()
 
-    player_container.markdown("### Individual player statistics based on tournament data")
+    player_container.markdown(
+        "### Individual player statistics based on tournament data"
+    )
     unique_player_names = np.sort(
         pd.unique(matches_df[["vPlayerName", "hPlayerName"]].values.ravel("K"))
     )
@@ -594,7 +641,14 @@ if display_mode != "prod":
 
         player_container.table(
             search_results[
-                ["WinnerPlayer", "LoserPlayer", "Score_Short", "Rallies", "MatchDatePandas", "TournamentName"]
+                [
+                    "WinnerPlayer",
+                    "LoserPlayer",
+                    "Score_Short",
+                    "Rallies",
+                    "MatchDatePandas",
+                    "TournamentName",
+                ]
             ]
         )
         player_container.caption(f"Found {len(search_results)} matches for {name}")
@@ -612,7 +666,7 @@ if display_mode != "prod":
             x="MatchDatePandas",
             hue="Win",
             palette=hack_palette,
-            legend=True
+            legend=True,
         )
         ax.set_xlabel("Date")
         ax.set_ylabel("Number of rallies")
@@ -621,7 +675,6 @@ if display_mode != "prod":
         player_container.pyplot(fig)
 
     player_container.markdown("---")
-
 
     new_container = st.container()
     new_container.markdown("### Tournament matches played over years and months")

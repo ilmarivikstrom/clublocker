@@ -13,8 +13,12 @@ def load_tournaments(skip: bool) -> pd.DataFrame:
     wildcard = "data/tournaments*"
     if skip and (len(glob.glob(wildcard)) > 0):
         latest_pickle_date = get_latest_pickle_date(wildcard=wildcard)
-        tournaments_df_dirty = _load_pickle(file_name=f"tournaments_{str(latest_pickle_date)}.pkl")
-        print(f"Skipped loading new tournaments, loaded tournaments from {str(latest_pickle_date)}")
+        tournaments_df_dirty = _load_pickle(
+            file_name=f"tournaments_{str(latest_pickle_date)}.pkl"
+        )
+        print(
+            f"Skipped loading new tournaments, loaded tournaments from {str(latest_pickle_date)}"
+        )
     else:
         current_date = dt.datetime.now().date()
         if not path.exists(f"data/tournaments_{str(current_date)}.pkl"):
@@ -43,8 +47,12 @@ def load_matches(skip: bool, tournaments_df: pd.DataFrame) -> pd.DataFrame:
     wildcard = "data/matches*"
     if skip and (len(glob.glob(wildcard)) > 0):
         latest_pickle_date = get_latest_pickle_date(wildcard=wildcard)
-        matches_df_dirty = _load_pickle(file_name=f"matches_{str(latest_pickle_date)}.pkl")
-        print(f"Skipped loading new matches, loaded matches from {str(latest_pickle_date)}")
+        matches_df_dirty = _load_pickle(
+            file_name=f"matches_{str(latest_pickle_date)}.pkl"
+        )
+        print(
+            f"Skipped loading new matches, loaded matches from {str(latest_pickle_date)}"
+        )
     else:
         current_date = dt.datetime.now().date()
         if not path.exists(f"data/matches_{str(current_date)}.pkl"):
@@ -64,12 +72,18 @@ def load_rankings(skip: bool) -> pd.DataFrame:
     wildcard = "data/rankings*"
     if skip and (len(glob.glob(wildcard)) > 0):
         latest_pickle_date = get_latest_pickle_date(wildcard=wildcard)
-        rankings_df_dirty = _load_pickle(file_name=f"rankings_{str(latest_pickle_date)}.pkl")
-        print(f"Skipped loading new rankings, loaded rankings from {str(latest_pickle_date)}")
+        rankings_df_dirty = _load_pickle(
+            file_name=f"rankings_{str(latest_pickle_date)}.pkl"
+        )
+        print(
+            f"Skipped loading new rankings, loaded rankings from {str(latest_pickle_date)}"
+        )
     else:
         current_date = dt.datetime.now().date()
         if not path.exists(f"data/rankings_{str(current_date)}.pkl"):
-            with st.spinner("Loading ranking data from Club Locker, please be patient..."):
+            with st.spinner(
+                "Loading ranking data from Club Locker, please be patient..."
+            ):
                 _fetch_and_save_rankings(file_name=f"rankings_{str(current_date)}.pkl")
         rankings_df_dirty = _load_pickle(file_name=f"rankings_{str(current_date)}.pkl")
     rankings_df = _preprocess_rankings(rankings_df_dirty)
@@ -133,7 +147,9 @@ def _preprocess_matches(matches_df_dirty, tournaments_df):
         .str.join(",")
         .str.replace(",", " ")
     )
-    matches_df_dirty["MatchDatePandas"] = (pd.to_datetime(matches_df_dirty["MatchDate"] + " " + matches_df_dirty["StartTime"]))
+    matches_df_dirty["MatchDatePandas"] = pd.to_datetime(
+        matches_df_dirty["MatchDate"] + " " + matches_df_dirty["StartTime"]
+    )
     matches_df_dirty["Game1"] = (
         (matches_df_dirty["wset1"] + matches_df_dirty["oset1"]).fillna(0).astype(int)
     )
@@ -229,7 +245,12 @@ def _preprocess_matches(matches_df_dirty, tournaments_df):
     matches_df_dirty["Month"] = [x.month for x in matches_df_dirty["MatchDatePandas"]]
     matches_df_dirty["Week"] = [x.week for x in matches_df_dirty["MatchDatePandas"]]
     matches_df_dirty.sort_values(by=["MatchDatePandas"], ascending=True, inplace=True)
-    matches_df_dirty = pd.merge(matches_df_dirty, tournaments_df[["TournamentID", "TournamentName"]], how="left", on="TournamentID")
+    matches_df_dirty = pd.merge(
+        matches_df_dirty,
+        tournaments_df[["TournamentID", "TournamentName"]],
+        how="left",
+        on="TournamentID",
+    )
     matches_df = matches_df_dirty
     return matches_df
 
@@ -290,7 +311,9 @@ def _fetch_and_save_tournament_matches(
         )
         index += 1
         progress_bar.progress(index / len(dates_ids))
-        status_text.text(f'Loaded matches from {results_df.loc[results_df["TournamentID"] == tournament[0]]["TournamentName"].values.tolist()[0]} tournament...')
+        status_text.text(
+            f'Loaded matches from {results_df.loc[results_df["TournamentID"] == tournament[0]]["TournamentName"].values.tolist()[0]} tournament...'
+        )
     status_text.text("")
     matches_df_dirty = pd.DataFrame(matches_list, columns=matches_list[0].keys())
     matches_df_dirty = matches_df_dirty.drop_duplicates(subset="matchid", keep="first")
