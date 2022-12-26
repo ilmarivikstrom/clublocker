@@ -79,10 +79,6 @@ def custom_css() -> None:
             100% {{ opacity: 1; }}
         }}
 
-        img:hover {{
-            -webkit-filter: drop-shadow(0px 0px 5px rgba(188, 146, 67, 0.8));
-        }}
-
         button[title="View fullscreen"] {{
             display: none;
         }}

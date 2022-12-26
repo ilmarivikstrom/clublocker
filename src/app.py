@@ -67,7 +67,7 @@ current_date = dt.datetime.now().date()
 
 
 # Page header.
-_, header_image_container, _ = st.columns([1, 2, 1])
+_, header_image_container, _ = st.columns([2, 3, 2])
 header_image_container.image("res/legacy.png")
 header_text_container = st.container()
 header_text_container.title(
