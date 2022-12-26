@@ -19,8 +19,6 @@ def hide_table_row_index():
 
 
 def custom_css() -> None:
-    with open("res/neon_court2.png", "rb") as image:
-        encoded_string = base64.b64encode(image.read())
     st.markdown(
         f"""
         <style>
@@ -52,6 +50,7 @@ def custom_css() -> None:
         [data-testid="stHeader"] {{
             background-color: rgba(0, 0, 0, 0);
         }}
+
         [data-testid="stSidebar"] {{
             background:
                 radial-gradient(black 15%, transparent 16%) 0 0,
@@ -61,9 +60,11 @@ def custom_css() -> None:
             background-color:#0d0d0d;
             background-size:16px 16px;
         }}
+
         .block-container {{
             max-width: 66rem;
         }}
+
         img {{
             border-radius: 15px;
             -webkit-filter: drop-shadow(0px 0px 0px rgba(255,255,255,0.80));
@@ -72,25 +73,32 @@ def custom_css() -> None:
             transition: all 0.5s linear;
             animation: fadeInOpacity 4s;
         }}
+
         @-webkit-keyframes fadeInOpacity {{
             0% {{ opacity: 0; }}
             100% {{ opacity: 1; }}
         }}
+
         img:hover {{
             -webkit-filter: drop-shadow(0px 0px 5px rgba(188, 146, 67, 0.8));
         }}
+
         button[title="View fullscreen"] {{
             display: none;
         }}
+
         td {{
             background: #111111bb;
         }}
+
         th {{
             background: #000000bb;
         }}
+
         footer {{
             visibility: hidden;
         }}
+
         #MainMenu {{
             visibility: hidden;
         }}
@@ -114,10 +122,6 @@ def insert_background() -> None:
             animation-name: fadeInBackground;
             animation-duration 4s;
             animation-fill-mode: forwards;
-        }}
-        @-webkit-keyframes fadeInBackground {{
-            0% {{ }}
-            100% {{ }}
         }}
         </style>
         """,
