@@ -11,7 +11,7 @@ from pyinstrument import Profiler
 #from dotenv import load_dotenv
 
 from utils.extraction import load_matches, load_rankings, load_tournaments, get_latest_pickle_date
-from utils.general import caption_text, custom_css, convert_df_to_csv, hide_table_row_index
+from utils.general import caption_text, custom_css, convert_df_to_csv, hide_table_row_index, insert_background
 from utils.styles import *
 
 # profiler = Profiler()
@@ -47,6 +47,7 @@ streamlit_style = """
 skip_data_fetch = True
 st.markdown(streamlit_style, unsafe_allow_html=True)
 custom_css()
+insert_background()
 plt.style.use("ggplot")
 
 # Get the starting datetime.
@@ -59,7 +60,7 @@ header_image_container.image("res/legacy.png")
 header_text_container = st.container()
 header_text_container.title(
     """
-    A Deep Dive into Finnish Squash Tournament Data
+    A Brief Dive into Finnish Squash Tournament Data
     """
 )
 
@@ -152,7 +153,6 @@ st.sidebar.markdown(
     - [5. Player demographics](#5-player-demographics)
       - [5.1 Age of the player base](#5-1-age-of-the-player-base)
       - [5.2 Player's age vs. ranking](#5-2-player-s-age-vs-ranking)
-
 
     ---
     """
@@ -655,7 +655,6 @@ if display_mode != "prod":
         annot=True,
     )
     new_container.pyplot(fig)
-
 
 # profiler.stop()
 # profiler.print()
