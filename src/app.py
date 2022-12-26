@@ -72,7 +72,7 @@ header_image_container.image("res/legacy.png")
 header_text_container = st.container()
 header_text_container.title(
     """
-    A Brief Dive into Finnish Squash Tournament Data
+    A Brief Adventure into Finnish Squash Tournament Data
     """
 )
 
