@@ -61,14 +61,13 @@ def custom_css() -> None:
         }}
 
         [data-testid="stSidebar"] {{
-            background: radial-gradient(
-                rgba(255, 255, 255, 0.075) 8%,
-                transparent 8%
-            );
-            background-position: 0% 0%;
-            background-size: 2vmin 2vmin;
-            height: 100%;
-            width: 100%;
+            background:
+                radial-gradient(black 15%, transparent 16%) 0 0,
+                radial-gradient(black 15%, transparent 16%) 8px 8px,
+                radial-gradient(rgba(255,255,255,0.05) 15%, transparent 20%) 0 1px,
+                radial-gradient(rgba(255,255,255,.05) 15%, transparent 20%) 8px 9px;
+            background-color:#0d0d0d;
+            background-size:16px 16px;
         }}
 
         .block-container {{
