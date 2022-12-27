@@ -22,7 +22,6 @@ from utils.general import (
     custom_css,
     convert_df_to_csv,
     hide_table_row_index,
-    insert_background,
 )
 from utils.styles import *
 
@@ -41,25 +40,15 @@ if display_mode == None:
 # Basic configurations
 pd.options.mode.chained_assignment = None
 st.set_page_config(
-    page_title="Club Locker Data Analysis",
+    page_title="Squashlytics",
     page_icon="res/nikkiboxi.png",
     layout="centered",
     initial_sidebar_state="collapsed",
     menu_items={},
 )
-streamlit_style = """
-			<style>
-			@import url('https://fonts.googleapis.com/css2?family=PT+Sans');
-
-			html, body, [class*="css"]  {
-			font-family: 'PT Sans', sans-serif;
-			}
-			</style>
-			"""
 skip_data_fetch = True
-st.markdown(streamlit_style, unsafe_allow_html=True)
+
 custom_css()
-insert_background()
 plt.style.use("ggplot")
 
 # Get the starting datetime.
@@ -67,8 +56,8 @@ current_date = dt.datetime.now().date()
 
 
 # Page header.
-_, header_image_container, _ = st.columns([2, 3, 2])
-header_image_container.image("res/legacy.png")
+_, header_image_container, _ = st.columns([1, 4, 1])
+header_image_container.image("res/court3.png", caption="ASB Squash Courts - ASB TPoint")
 header_text_container = st.container()
 header_text_container.title(
     """

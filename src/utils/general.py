@@ -19,19 +19,28 @@ def hide_table_row_index():
 
 
 def custom_css() -> None:
+    with open("res/neon_court2.png", "rb") as image:
+        encoded_string = base64.b64encode(image.read())
     st.markdown(
         f"""
         <style>
+        @import url('https://fonts.googleapis.com/css2?family=PT+Sans');
+		html, body, [class*="css"]  {{
+			font-family: 'PT Sans', sans-serif;
+		}}
+
         a {{
             text-decoration: none;
         }}
+        
         html {{
             font-size: 110%;
         }}
+
         [data-testid="stAppViewContainer"] {{
-            animation: fade-in-scale-down 2s;
             animation-fill-mode: forwards;
         }}
+
         @-webkit-keyframes fade-in-scale-down{{
             0% {{
                 opacity:0;
@@ -52,22 +61,29 @@ def custom_css() -> None:
         }}
 
         [data-testid="stSidebar"] {{
-            background:
-                radial-gradient(black 15%, transparent 16%) 0 0,
-                radial-gradient(black 15%, transparent 16%) 8px 8px,
-                radial-gradient(rgba(255,255,255,0.05) 15%, transparent 20%) 0 1px,
-                radial-gradient(rgba(255,255,255,.05) 15%, transparent 20%) 8px 9px;
-            background-color:#0d0d0d;
-            background-size:16px 16px;
+            background: radial-gradient(
+                rgba(255, 255, 255, 0.075) 8%,
+                transparent 8%
+            );
+            background-position: 0% 0%;
+            background-size: 2vmin 2vmin;
+            height: 100%;
+            width: 100%;
         }}
 
         .block-container {{
             max-width: 66rem;
+            padding-bottom: 4vh;
+            padding-top: 4vh;
+        }}
+
+        blockquote {{
+            border-left: 2px solid rgb(130 130 130 / 50%);
         }}
 
         img {{
             border-radius: 15px;
-            -webkit-filter: drop-shadow(0px 0px 0px rgba(255,255,255,0.80));
+            border-color: transparent;
             -webkit-transition: all 0.5s linear;
             -o-transition: all 0.5s linear;
             transition: all 0.5s linear;
@@ -98,18 +114,7 @@ def custom_css() -> None:
         #MainMenu {{
             visibility: hidden;
         }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
 
-
-def insert_background() -> None:
-    with open("res/neon_court2.png", "rb") as image:
-        encoded_string = base64.b64encode(image.read())
-    st.markdown(
-        f"""
-        <style>
         [data-testid="stAppViewContainer"] > .main {{
             background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
             background-size: cover;
