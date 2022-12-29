@@ -1,5 +1,6 @@
 black
 invoke
+joblib
 matplotlib
 numpy
 pandas
@@ -10,4 +11,3 @@ streamlit
 wheel
 graphviz
 pyinstrument
-python-dotenv
