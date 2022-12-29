@@ -5,5 +5,5 @@ display = dict(
 )
 
 data = dict(
-    skip_fetch = False,
+    skip_fetch = True,
 )
