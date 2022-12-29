@@ -18,8 +18,8 @@ def hide_table_row_index():
     return hide_table_row_index
 
 
-def custom_css() -> None:
-    with open("res/neon_court2.png", "rb") as image:
+def custom_css(background_path: str) -> None:
+    with open(background_path, "rb") as image:
         encoded_string = base64.b64encode(image.read())
     st.markdown(
         f"""
@@ -61,13 +61,14 @@ def custom_css() -> None:
         }}
 
         [data-testid="stSidebar"] {{
-            background:
-                radial-gradient(black 15%, transparent 16%) 0 0,
-                radial-gradient(black 15%, transparent 16%) 8px 8px,
-                radial-gradient(rgba(255,255,255,0.05) 15%, transparent 20%) 0 1px,
-                radial-gradient(rgba(255,255,255,.05) 15%, transparent 20%) 8px 9px;
-            background-color:#0d0d0d;
-            background-size:16px 16px;
+            background: radial-gradient(
+                rgba(255, 255, 255, 0.075) 8%,
+                #181521 8%
+            );
+            background-position: 0% 0%;
+            background-size: 16px 16px;
+            height: 100%;
+            width: 100%;
         }}
 
         .block-container {{
@@ -131,3 +132,10 @@ def custom_css() -> None:
 
 def caption_text(name, text):
     return f"<p style='text-align: center; color: #d4d4d4; font-size: 0.8em;'><strong>{name}</strong>   {text}</p>"
+
+
+def color_covid(v):
+    if v == "pre":
+        return f"color: #daaa4c;"
+    elif v == "post":
+        return f"color: #a7003c;"
