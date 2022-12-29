@@ -622,6 +622,10 @@ def data_analysis(st, **state):
     ax.set_xlim(-5, 90)
     ax.set_xlabel("Match duration (minutes)")
     match_container.pyplot(fig)
+    match_container.markdown(
+        caption_text("Figure 9", "Distribution of match durations."),
+        unsafe_allow_html=True,
+    )
 
     match_container.markdown(
         f"""
