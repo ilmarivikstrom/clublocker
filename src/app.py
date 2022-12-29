@@ -79,7 +79,7 @@ def data_analysis(st, **state):
         - over **500,000** Finnish people are interested in squash in 2022
         - growth of **over 70%** compared to the previous years
         
-        This growth is visible to any hobbyist that is looking to book courts. Rewinding the previous years, it is evident that squash courts are in higher demand today (Q4/2022) than in recent history. My personal experience suggests that truckloads of newcomers, in particular, are finding the courts and enjoying the sport. This phenomenon is very clear at least in Helsinki during primetime hours in Helsinki.
+        This growth is visible to any hobbyist that is looking to book courts. Rewinding the previous years, it is evident that squash courts are in higher demand today (Q4/2022) than in recent history. My personal experience suggests that truckloads of newcomers, in particular, are finding the courts and enjoying the sport. This phenomenon is very clear at least in Helsinki during primetime hours.
         
         > *"These results are great news for the sport, no?"*
 
@@ -94,12 +94,10 @@ def data_analysis(st, **state):
         - find patterns and draw insights from the data
         - spread the insights and encourage discussion
         - take a step toward a more data-driven future and decision making
-
-        ***Disclaimer: I have done my best to ensure the analysis is done properly without any major mistakes or misconclusions. However, such software bugs or misunderstandings may still exist in the following analysis.***
-
-        #### Alright! With all of these out of the way, let's dive in.
         """
     )
+    introduction_container.info("Disclaimer: I have done my best to ensure the analysis is done properly without any major mistakes or misconclusions. However, such software bugs or misunderstandings may still exist in the following analysis.")
+    introduction_container.markdown("#### Alright! With all of these out of the way, let's dive in.")
     introduction_container.markdown("---")
 
     loading_container = st.container()
@@ -601,7 +599,7 @@ def data_analysis(st, **state):
         f"""
         This time we are looking at a scatter plot. The colorful dots around 0-minute area represent matches that have been input to Club Locker in mere seconds. There's no reason to think that the matches actually took less than a few minutes.
 
-        Let's look at the same data with a slightly different perspective:
+        Let's look at the same data from a slightly different perspective:
         """
     )
 
