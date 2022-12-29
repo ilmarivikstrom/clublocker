@@ -39,13 +39,16 @@ st.set_page_config(
     menu_items={},
 )
 
+
 def data_analysis(st, **state):
     custom_css(background_path="res/neon_court2.png")
     plt.style.use("ggplot")
 
     # Page header.
     _, header_image_container, _ = st.columns([1, 4, 1])
-    header_image_container.image("res/court3.png", caption="Imagery: ASB TPoint Squash Courts")
+    header_image_container.image(
+        "res/court3.png", caption="Imagery: ASB TPoint Squash Courts"
+    )
     header_text_container = st.container()
     header_text_container.title(
         """
@@ -99,7 +102,6 @@ def data_analysis(st, **state):
     )
     introduction_container.markdown("---")
 
-
     loading_container = st.container()
     loading_container.markdown(
         """
@@ -113,7 +115,9 @@ def data_analysis(st, **state):
     )
 
     tournaments_df = load_tournaments(skip=config.data["skip_fetch"])
-    matches_df = load_matches(skip=config.data["skip_fetch"], tournaments_df=tournaments_df)
+    matches_df = load_matches(
+        skip=config.data["skip_fetch"], tournaments_df=tournaments_df
+    )
     rankings_df = load_rankings(skip=config.data["skip_fetch"])
 
     loading_container.info(
@@ -127,7 +131,6 @@ def data_analysis(st, **state):
     )
     loading_container.success("⬇ All data has been fetched. Let's move on! ⬇")
     loading_container.markdown("---")
-
 
     st.sidebar.markdown(
         """
@@ -173,7 +176,6 @@ def data_analysis(st, **state):
         file_name=f"rankings_{str(get_latest_pickle_date('data/rankings*'))}.csv",
         mime="text/csv",
     )
-
 
     tournament_container = st.container()
 
@@ -228,7 +230,9 @@ def data_analysis(st, **state):
     ax.xaxis.set_major_locator(mdates.YearLocator())
     xticks = ax.get_xticks()
     xticks_dates = [pd.to_datetime(dt.date.fromordinal(int(x))).date() for x in xticks]
-    xticks_dates = [x + pd.Timedelta(1, "d") if x.day == 31 else x for x in xticks_dates]
+    xticks_dates = [
+        x + pd.Timedelta(1, "d") if x.day == 31 else x for x in xticks_dates
+    ]
     ax.set_xticklabels(xticks_dates)
     for label in ax.get_xticklabels(which="major"):
         label.set(rotation=30, horizontalalignment="center", fontsize=8)
@@ -245,7 +249,6 @@ def data_analysis(st, **state):
         The red line skewering the graph is a 2nd-order polynomial model fitted on the data. This model shows the general trend of tournament participation. The trend shows the harsh truth, which is that there has been a clear decreasing trend for a long time.
         """
     )
-
 
     tournament_container.markdown(
         f"""
@@ -283,7 +286,6 @@ def data_analysis(st, **state):
         """
     )
 
-
     number_top_tournaments = 15
     tournament_container.markdown(
         f"""
@@ -304,7 +306,9 @@ def data_analysis(st, **state):
                 "NumPlayers": "Players",
                 "covid": "Covid",
             }
-        ).style.background_gradient(cmap="Greens", low=0.5, subset=["Players"]).applymap(color_covid)
+        )
+        .style.background_gradient(cmap="Greens", low=0.5, subset=["Players"])
+        .applymap(color_covid)
     )
     tournament_container.markdown(
         caption_text("Table 1", "Tournaments with highest participation."),
@@ -333,7 +337,9 @@ def data_analysis(st, **state):
                 "NumPlayers": "Players",
                 "covid": "Covid",
             }
-        ).style.background_gradient(cmap="Reds_r", high=0.5, subset=["Players"]).applymap(color_covid)
+        )
+        .style.background_gradient(cmap="Reds_r", high=0.5, subset=["Players"])
+        .applymap(color_covid)
     )
     tournament_container.markdown(
         caption_text("Table 2", "Tournaments with lowest participation."),
@@ -349,9 +355,7 @@ def data_analysis(st, **state):
         """
     )
 
-
     tournament_container.markdown("---")
-
 
     player_activity_container = st.container()
     show_results = 25
@@ -368,7 +372,6 @@ def data_analysis(st, **state):
         """
     )
 
-
     unique_player_names = list(
         set(matches_df["WinnerPlayer"].values.tolist())
         | set(matches_df["LoserPlayer"].values.tolist())
@@ -377,8 +380,12 @@ def data_analysis(st, **state):
     active_players_df = (
         pd.concat(
             [
-                matches_df.groupby(by=["LoserPlayer"]).count().reset_index(names="Player"),
-                matches_df.groupby(by=["WinnerPlayer"]).count().reset_index(names="Player"),
+                matches_df.groupby(by=["LoserPlayer"])
+                .count()
+                .reset_index(names="Player"),
+                matches_df.groupby(by=["WinnerPlayer"])
+                .count()
+                .reset_index(names="Player"),
             ]
         )
         .groupby(by="Player")
@@ -409,7 +416,6 @@ def data_analysis(st, **state):
         unsafe_allow_html=True,
     )
 
-
     player_activity_container.markdown(
         f"""
         #### 4.2 The toughest rivalries
@@ -438,7 +444,6 @@ def data_analysis(st, **state):
     player_activity_container.markdown(
         caption_text("Figure 4", f"Top {show_results} toughest rivalries."),
         unsafe_allow_html=True,
-
     )
     player_activity_container.markdown(
         """
@@ -447,7 +452,6 @@ def data_analysis(st, **state):
     )
 
     player_activity_container.markdown("---")
-
 
     demographics_container = st.container()
     demographics_container.markdown(
@@ -486,7 +490,6 @@ def data_analysis(st, **state):
         """
     )
 
-
     demographics_container.markdown(
         f"""
         #### 5.2 Player's age vs. ranking
@@ -498,7 +501,9 @@ def data_analysis(st, **state):
     fig, ax = plt.subplots()
     sn.scatterplot(
         data=rankings_df.rename(columns={"division": "Category"}).loc[
-            rankings_df.rename(columns={"division": "Category"})["Category"].isin(divisions)
+            rankings_df.rename(columns={"division": "Category"})["Category"].isin(
+                divisions
+            )
         ],
         x="age",
         y="ranking",
@@ -509,7 +514,8 @@ def data_analysis(st, **state):
     ax.set_xlim(start_xlim, end_xlim)
     demographics_container.pyplot(fig)
     demographics_container.markdown(
-        caption_text("Figure 6", "Ranking as a function of age."), unsafe_allow_html=True
+        caption_text("Figure 6", "Ranking as a function of age."),
+        unsafe_allow_html=True,
     )
     demographics_container.markdown(
         f"""
@@ -519,8 +525,6 @@ def data_analysis(st, **state):
         """
     )
     demographics_container.markdown("---")
-
-
 
     match_container = st.container()
 
@@ -559,7 +563,8 @@ def data_analysis(st, **state):
     ax.set_xlim(20, 120)
     match_container.pyplot(fig)
     match_container.markdown(
-        caption_text("Figure 7", "Games and rallies over the complete match dataset."), unsafe_allow_html=True
+        caption_text("Figure 7", "Games and rallies over the complete match dataset."),
+        unsafe_allow_html=True,
     )
 
     match_container.markdown(
@@ -588,7 +593,8 @@ def data_analysis(st, **state):
     ax.set_xlim(-5, 90)
     match_container.pyplot(fig)
     match_container.markdown(
-        caption_text("Figure 8", "Games and rallies as a function of match duration."), unsafe_allow_html=True
+        caption_text("Figure 8", "Games and rallies as a function of match duration."),
+        unsafe_allow_html=True,
     )
 
     match_container.markdown(
@@ -625,7 +631,6 @@ def data_analysis(st, **state):
         """
     )
 
-
     ending_container = st.container()
     ending_container.markdown(
         f"""
@@ -644,27 +649,19 @@ def data_analysis(st, **state):
     )
 
 
-
-
-
-
-
-
-
-
-
-
 def player_vs_player(st, **state):
     custom_css(background_path="res/neon_court4.png")
     _, header_image_container, _ = st.columns([1, 4, 1])
-    header_image_container.image("res/court4.png", caption="Imagery: ASB TPoint Squash Courts")
+    header_image_container.image(
+        "res/court4.png", caption="Imagery: ASB TPoint Squash Courts"
+    )
     header_text_container = st.container()
     header_text_container.title(
         """
         Player vs. Player Analyzer
         """
     )
-    
+
     author_container = st.container()
     author_container.markdown(
         """
@@ -680,14 +677,14 @@ def player_vs_player(st, **state):
         """
         This tool allows you to pick and compare two individual players with each other. Please go ahead and pick the players from the dropdown menus.
         """
-        )
-
+    )
 
     # TODO: Do data loading somewhere else? Maybe a landing page.
     tournaments_df = load_tournaments(skip=config.data["skip_fetch"])
-    matches_df = load_matches(skip=config.data["skip_fetch"], tournaments_df=tournaments_df)
+    matches_df = load_matches(
+        skip=config.data["skip_fetch"], tournaments_df=tournaments_df
+    )
     rankings_df = load_rankings(skip=config.data["skip_fetch"])
-
 
     player_1_selection_container, player_2_selection_container = st.columns(2)
     unique_player_names = np.sort(
@@ -695,12 +692,15 @@ def player_vs_player(st, **state):
     )
     unique_player_names = np.concatenate((["Select a player"], unique_player_names))
 
-
     active_players_df = (
         pd.concat(
             [
-                matches_df.groupby(by=["LoserPlayer"]).count().reset_index(names="Player"),
-                matches_df.groupby(by=["WinnerPlayer"]).count().reset_index(names="Player"),
+                matches_df.groupby(by=["LoserPlayer"])
+                .count()
+                .reset_index(names="Player"),
+                matches_df.groupby(by=["WinnerPlayer"])
+                .count()
+                .reset_index(names="Player"),
             ]
         )
         .groupby(by="Player")
@@ -715,47 +715,145 @@ def player_vs_player(st, **state):
         ["LoserPlayer", "WinnerPlayer"]
     ]
 
-    player_1_name = player_1_selection_container.selectbox(label="Player 1", options=unique_player_names, key="player_1_selection")
-    player_2_name = player_2_selection_container.selectbox(label="Player 2", options=unique_player_names, key="player_2_selection")
+    player_1_name = player_1_selection_container.selectbox(
+        label="Player 1", options=unique_player_names, key="player_1_selection"
+    )
+    player_2_name = player_2_selection_container.selectbox(
+        label="Player 2", options=unique_player_names, key="player_2_selection"
+    )
     player_1_ok = False
     player_2_ok = False
 
     if player_1_name != "Select a player":
-        if len(rankings_df.loc[(rankings_df["firstName"] == player_1_name.split(" ")[0]) & (rankings_df["lastName"] == player_1_name.split(" ")[1])].values.tolist()) > 0:
+        if (
+            len(
+                rankings_df.loc[
+                    (rankings_df["firstName"] == player_1_name.split(" ")[0])
+                    & (rankings_df["lastName"] == player_1_name.split(" ")[1])
+                ].values.tolist()
+            )
+            > 0
+        ):
             player_1_ok = True
         else:
             player_1_selection_container.error("Player not in rankings.")
 
     if player_2_name != "Select a player":
-        if len(rankings_df.loc[(rankings_df["firstName"] == player_2_name.split(" ")[0]) & (rankings_df["lastName"] == player_2_name.split(" ")[1])].values.tolist()) > 0:
+        if (
+            len(
+                rankings_df.loc[
+                    (rankings_df["firstName"] == player_2_name.split(" ")[0])
+                    & (rankings_df["lastName"] == player_2_name.split(" ")[1])
+                ].values.tolist()
+            )
+            > 0
+        ):
             player_2_ok = True
         else:
             player_2_selection_container.error("Player not in rankings.")
 
-    if player_1_name == player_2_name and (player_1_name != "Select a player" and player_2_name != "Select a player"):
+    if player_1_name == player_2_name and (
+        player_1_name != "Select a player" and player_2_name != "Select a player"
+    ):
         error_container = st.container()
         error_container.error("Please select two different players.")
     elif player_1_ok and player_2_ok:
-        if (player_1_name != "Select a player") and (player_2_name != "Select a player"):
+        if (player_1_name != "Select a player") and (
+            player_2_name != "Select a player"
+        ):
             data = {
-                "metrics": ["Age", "Rating", "Ranking", "Matches", "Wins", "Losses", "Win Percentage"],
+                "metrics": [
+                    "Age",
+                    "Rating",
+                    "Ranking",
+                    "Matches",
+                    "Wins",
+                    "Losses",
+                    "Win Percentage",
+                ],
                 player_1_name: [
-                    rankings_df.loc[(rankings_df["firstName"] == player_1_name.split(" ")[0]) & (rankings_df["lastName"] == player_1_name.split(" ")[1])]["age"].values.tolist()[0],
-                    rankings_df.loc[(rankings_df["firstName"] == player_1_name.split(" ")[0]) & (rankings_df["lastName"] == player_1_name.split(" ")[1])]["rating"].values.tolist()[0],
-                    rankings_df.loc[(rankings_df["firstName"] == player_1_name.split(" ")[0]) & (rankings_df["lastName"] == player_1_name.split(" ")[1])]["ranking"].values.tolist()[0],
-                    int(active_players_df.loc[active_players_df["Player"] == player_1_name]["TotalMatches"].values.tolist()[0]),
-                    int(active_players_df.loc[active_players_df["Player"] == player_1_name]["WinnerPlayer"].values.tolist()[0]),
-                    int(active_players_df.loc[active_players_df["Player"] == player_1_name]["LoserPlayer"].values.tolist()[0]),
-                    round(100 * int(active_players_df.loc[active_players_df["Player"] == player_1_name]["WinnerPlayer"].values.tolist()[0]) / int(active_players_df.loc[active_players_df["Player"] == player_1_name]["TotalMatches"].values.tolist()[0]))
+                    rankings_df.loc[
+                        (rankings_df["firstName"] == player_1_name.split(" ")[0])
+                        & (rankings_df["lastName"] == player_1_name.split(" ")[1])
+                    ]["age"].values.tolist()[0],
+                    rankings_df.loc[
+                        (rankings_df["firstName"] == player_1_name.split(" ")[0])
+                        & (rankings_df["lastName"] == player_1_name.split(" ")[1])
+                    ]["rating"].values.tolist()[0],
+                    rankings_df.loc[
+                        (rankings_df["firstName"] == player_1_name.split(" ")[0])
+                        & (rankings_df["lastName"] == player_1_name.split(" ")[1])
+                    ]["ranking"].values.tolist()[0],
+                    int(
+                        active_players_df.loc[
+                            active_players_df["Player"] == player_1_name
+                        ]["TotalMatches"].values.tolist()[0]
+                    ),
+                    int(
+                        active_players_df.loc[
+                            active_players_df["Player"] == player_1_name
+                        ]["WinnerPlayer"].values.tolist()[0]
+                    ),
+                    int(
+                        active_players_df.loc[
+                            active_players_df["Player"] == player_1_name
+                        ]["LoserPlayer"].values.tolist()[0]
+                    ),
+                    round(
+                        100
+                        * int(
+                            active_players_df.loc[
+                                active_players_df["Player"] == player_1_name
+                            ]["WinnerPlayer"].values.tolist()[0]
+                        )
+                        / int(
+                            active_players_df.loc[
+                                active_players_df["Player"] == player_1_name
+                            ]["TotalMatches"].values.tolist()[0]
+                        )
+                    ),
                 ],
                 player_2_name: [
-                    rankings_df.loc[(rankings_df["firstName"] == player_2_name.split(" ")[0]) & (rankings_df["lastName"] == player_2_name.split(" ")[1])]["age"].values.tolist()[0],
-                    rankings_df.loc[(rankings_df["firstName"] == player_2_name.split(" ")[0]) & (rankings_df["lastName"] == player_2_name.split(" ")[1])]["rating"].values.tolist()[0],
-                    rankings_df.loc[(rankings_df["firstName"] == player_2_name.split(" ")[0]) & (rankings_df["lastName"] == player_2_name.split(" ")[1])]["ranking"].values.tolist()[0],
-                    int(active_players_df.loc[active_players_df["Player"] == player_2_name]["TotalMatches"].values.tolist()[0]),
-                    int(active_players_df.loc[active_players_df["Player"] == player_2_name]["WinnerPlayer"].values.tolist()[0]),
-                    int(active_players_df.loc[active_players_df["Player"] == player_2_name]["LoserPlayer"].values.tolist()[0]),
-                    round(100 * int(active_players_df.loc[active_players_df["Player"] == player_2_name]["WinnerPlayer"].values.tolist()[0]) / int(active_players_df.loc[active_players_df["Player"] == player_2_name]["TotalMatches"].values.tolist()[0]))
+                    rankings_df.loc[
+                        (rankings_df["firstName"] == player_2_name.split(" ")[0])
+                        & (rankings_df["lastName"] == player_2_name.split(" ")[1])
+                    ]["age"].values.tolist()[0],
+                    rankings_df.loc[
+                        (rankings_df["firstName"] == player_2_name.split(" ")[0])
+                        & (rankings_df["lastName"] == player_2_name.split(" ")[1])
+                    ]["rating"].values.tolist()[0],
+                    rankings_df.loc[
+                        (rankings_df["firstName"] == player_2_name.split(" ")[0])
+                        & (rankings_df["lastName"] == player_2_name.split(" ")[1])
+                    ]["ranking"].values.tolist()[0],
+                    int(
+                        active_players_df.loc[
+                            active_players_df["Player"] == player_2_name
+                        ]["TotalMatches"].values.tolist()[0]
+                    ),
+                    int(
+                        active_players_df.loc[
+                            active_players_df["Player"] == player_2_name
+                        ]["WinnerPlayer"].values.tolist()[0]
+                    ),
+                    int(
+                        active_players_df.loc[
+                            active_players_df["Player"] == player_2_name
+                        ]["LoserPlayer"].values.tolist()[0]
+                    ),
+                    round(
+                        100
+                        * int(
+                            active_players_df.loc[
+                                active_players_df["Player"] == player_2_name
+                            ]["WinnerPlayer"].values.tolist()[0]
+                        )
+                        / int(
+                            active_players_df.loc[
+                                active_players_df["Player"] == player_2_name
+                            ]["TotalMatches"].values.tolist()[0]
+                        )
+                    ),
                 ],
             }
             data = {
@@ -764,32 +862,106 @@ def player_vs_player(st, **state):
                     player_2_name,
                 ],
                 "Age": [
-                    rankings_df.loc[(rankings_df["firstName"] == player_1_name.split(" ")[0]) & (rankings_df["lastName"] == player_1_name.split(" ")[1])]["age"].values.tolist()[0],
-                    rankings_df.loc[(rankings_df["firstName"] == player_2_name.split(" ")[0]) & (rankings_df["lastName"] == player_2_name.split(" ")[1])]["age"].values.tolist()[0],
+                    rankings_df.loc[
+                        (rankings_df["firstName"] == player_1_name.split(" ")[0])
+                        & (rankings_df["lastName"] == player_1_name.split(" ")[1])
+                    ]["age"].values.tolist()[0],
+                    rankings_df.loc[
+                        (rankings_df["firstName"] == player_2_name.split(" ")[0])
+                        & (rankings_df["lastName"] == player_2_name.split(" ")[1])
+                    ]["age"].values.tolist()[0],
                 ],
                 "Rating": [
-                    rankings_df.loc[(rankings_df["firstName"] == player_1_name.split(" ")[0]) & (rankings_df["lastName"] == player_1_name.split(" ")[1])]["rating"].fillna(0).values.tolist()[0],
-                    rankings_df.loc[(rankings_df["firstName"] == player_2_name.split(" ")[0]) & (rankings_df["lastName"] == player_2_name.split(" ")[1])]["rating"].fillna(0).values.tolist()[0],
+                    rankings_df.loc[
+                        (rankings_df["firstName"] == player_1_name.split(" ")[0])
+                        & (rankings_df["lastName"] == player_1_name.split(" ")[1])
+                    ]["rating"]
+                    .fillna(0)
+                    .values.tolist()[0],
+                    rankings_df.loc[
+                        (rankings_df["firstName"] == player_2_name.split(" ")[0])
+                        & (rankings_df["lastName"] == player_2_name.split(" ")[1])
+                    ]["rating"]
+                    .fillna(0)
+                    .values.tolist()[0],
                 ],
                 "Ranking": [
-                    rankings_df.loc[(rankings_df["firstName"] == player_1_name.split(" ")[0]) & (rankings_df["lastName"] == player_1_name.split(" ")[1])]["ranking"].fillna(0).values.tolist()[0],
-                    rankings_df.loc[(rankings_df["firstName"] == player_2_name.split(" ")[0]) & (rankings_df["lastName"] == player_2_name.split(" ")[1])]["ranking"].fillna(0).values.tolist()[0],
+                    rankings_df.loc[
+                        (rankings_df["firstName"] == player_1_name.split(" ")[0])
+                        & (rankings_df["lastName"] == player_1_name.split(" ")[1])
+                    ]["ranking"]
+                    .fillna(0)
+                    .values.tolist()[0],
+                    rankings_df.loc[
+                        (rankings_df["firstName"] == player_2_name.split(" ")[0])
+                        & (rankings_df["lastName"] == player_2_name.split(" ")[1])
+                    ]["ranking"]
+                    .fillna(0)
+                    .values.tolist()[0],
                 ],
                 "Matches": [
-                    int(active_players_df.loc[active_players_df["Player"] == player_1_name]["TotalMatches"].values.tolist()[0]),
-                    int(active_players_df.loc[active_players_df["Player"] == player_2_name]["TotalMatches"].values.tolist()[0]),
+                    int(
+                        active_players_df.loc[
+                            active_players_df["Player"] == player_1_name
+                        ]["TotalMatches"].values.tolist()[0]
+                    ),
+                    int(
+                        active_players_df.loc[
+                            active_players_df["Player"] == player_2_name
+                        ]["TotalMatches"].values.tolist()[0]
+                    ),
                 ],
                 "Wins": [
-                    int(active_players_df.loc[active_players_df["Player"] == player_1_name]["WinnerPlayer"].values.tolist()[0]),
-                    int(active_players_df.loc[active_players_df["Player"] == player_2_name]["WinnerPlayer"].values.tolist()[0]),
+                    int(
+                        active_players_df.loc[
+                            active_players_df["Player"] == player_1_name
+                        ]["WinnerPlayer"].values.tolist()[0]
+                    ),
+                    int(
+                        active_players_df.loc[
+                            active_players_df["Player"] == player_2_name
+                        ]["WinnerPlayer"].values.tolist()[0]
+                    ),
                 ],
                 "Losses": [
-                    int(active_players_df.loc[active_players_df["Player"] == player_1_name]["LoserPlayer"].values.tolist()[0]),
-                    int(active_players_df.loc[active_players_df["Player"] == player_2_name]["LoserPlayer"].values.tolist()[0]),
+                    int(
+                        active_players_df.loc[
+                            active_players_df["Player"] == player_1_name
+                        ]["LoserPlayer"].values.tolist()[0]
+                    ),
+                    int(
+                        active_players_df.loc[
+                            active_players_df["Player"] == player_2_name
+                        ]["LoserPlayer"].values.tolist()[0]
+                    ),
                 ],
                 "Win Percentage": [
-                    round(100 * int(active_players_df.loc[active_players_df["Player"] == player_1_name]["WinnerPlayer"].values.tolist()[0]) / int(active_players_df.loc[active_players_df["Player"] == player_1_name]["TotalMatches"].values.tolist()[0])),
-                    round(100 * int(active_players_df.loc[active_players_df["Player"] == player_2_name]["WinnerPlayer"].values.tolist()[0]) / int(active_players_df.loc[active_players_df["Player"] == player_2_name]["TotalMatches"].values.tolist()[0]))
+                    round(
+                        100
+                        * int(
+                            active_players_df.loc[
+                                active_players_df["Player"] == player_1_name
+                            ]["WinnerPlayer"].values.tolist()[0]
+                        )
+                        / int(
+                            active_players_df.loc[
+                                active_players_df["Player"] == player_1_name
+                            ]["TotalMatches"].values.tolist()[0]
+                        )
+                    ),
+                    round(
+                        100
+                        * int(
+                            active_players_df.loc[
+                                active_players_df["Player"] == player_2_name
+                            ]["WinnerPlayer"].values.tolist()[0]
+                        )
+                        / int(
+                            active_players_df.loc[
+                                active_players_df["Player"] == player_2_name
+                            ]["TotalMatches"].values.tolist()[0]
+                        )
+                    ),
                 ],
             }
             comparison_container = st.container()
@@ -797,38 +969,23 @@ def player_vs_player(st, **state):
             dataframe = dataframe.set_index("Name")
             dark_green = "#00ff0033"
             dark_red = "#ff000033"
-            comparison_container.dataframe((
-                dataframe.style
-                ).highlight_max(
-                    axis=0, subset=["Rating"], color=dark_green
-                ).highlight_min(
-                    axis=0, subset=["Rating"], color=dark_red
-                ).highlight_max(
-                    axis=0, subset=["Ranking"], color=dark_red
-                ).highlight_min(
-                    axis=0, subset=["Ranking"], color=dark_green
-                ).highlight_max(
-                    axis=0, subset=["Matches"], color=dark_green
-                ).highlight_min(
-                    axis=0, subset=["Matches"], color=dark_red
-                ).highlight_max(
-                    axis=0, subset=["Wins"], color=dark_green
-                ).highlight_min(
-                    axis=0, subset=["Wins"], color=dark_red
-                ).highlight_max(
-                    axis=0, subset=["Losses"], color=dark_red
-                ).highlight_min(
-                    axis=0, subset=["Losses"], color=dark_green
-                ).highlight_max(
-                    axis=0, subset=["Win Percentage"], color=dark_green
-                ).highlight_min(
-                    axis=0, subset=["Win Percentage"], color=dark_red
-                ),
-                use_container_width=True
+            comparison_container.dataframe(
+                (dataframe.style)
+                .highlight_max(axis=0, subset=["Rating"], color=dark_green)
+                .highlight_min(axis=0, subset=["Rating"], color=dark_red)
+                .highlight_max(axis=0, subset=["Ranking"], color=dark_red)
+                .highlight_min(axis=0, subset=["Ranking"], color=dark_green)
+                .highlight_max(axis=0, subset=["Matches"], color=dark_green)
+                .highlight_min(axis=0, subset=["Matches"], color=dark_red)
+                .highlight_max(axis=0, subset=["Wins"], color=dark_green)
+                .highlight_min(axis=0, subset=["Wins"], color=dark_red)
+                .highlight_max(axis=0, subset=["Losses"], color=dark_red)
+                .highlight_min(axis=0, subset=["Losses"], color=dark_green)
+                .highlight_max(axis=0, subset=["Win Percentage"], color=dark_green)
+                .highlight_min(axis=0, subset=["Win Percentage"], color=dark_red),
+                use_container_width=True,
             )
             comparison_container.markdown("---")
-
-
 
 
 app = MultiPage(navbar_style="SelectBox", hide_navigation=True)
