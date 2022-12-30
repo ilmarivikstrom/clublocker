@@ -63,7 +63,7 @@ def custom_css(background_path: str) -> None:
 
         [data-testid="stSidebar"] {{
             background: radial-gradient(
-                rgba(255, 255, 255, 0.075) 8%,
+                rgba(35, 35, 35, 1.0) 8%,
                 #181521 8%
             );
             background-position: 0% 0%;
