@@ -10,13 +10,13 @@ def convert_df_to_csv(df_to_convert: pd.DataFrame) -> str:
 
 
 def hide_table_row_index() -> str:
-    hide_table_row_index = """
+    style_string = """
                 <style>
                 thead tr th:first-child {display:none}
                 tbody th {display:none}
                 </style>
                 """
-    return hide_table_row_index
+    return style_string
 
 
 def custom_css(background_path: str) -> None:
@@ -137,8 +137,8 @@ def caption_text(name: str, text: str) -> str:
 
 def color_covid(v: str) -> str:
     if v == "pre":
-        return f"color: #daaa4c;"
+        return "color: #daaa4c;"
     elif v == "post":
-        return f"color: #a7003c;"
+        return "color: #a7003c;"
     else:
         return ""

@@ -1,14 +1,14 @@
 import datetime as dt
+from types import ModuleType
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sn
-import streamlit as st
-from types import ModuleType
+import streamlit
 
-import config
+import config_file
 from streamlit_multipage import MultiPage
 from utils.extraction import (
     get_latest_pickle_date,
@@ -23,16 +23,16 @@ from utils.general import (
     custom_css,
     hide_table_row_index,
 )
-from utils.styles import *
+from utils.styles import custom_palette_3
 
 # Display mode either "dev" or "prod" from config.
-display_mode = config.display["mode"]
+display_mode = config_file.display["mode"]
 
 # Basic configurations
 
 pd.options.mode.chained_assignment = None
-st.set_page_config(
-    page_title=config.display["main_title"],
+streamlit.set_page_config(
+    page_title=config_file.display["main_title"],
     page_icon="res/nikkiboxi.png",
     layout="centered",
     initial_sidebar_state="collapsed",
@@ -40,23 +40,23 @@ st.set_page_config(
 )
 
 
-def data_analysis(st: ModuleType, **state: dict) -> None:
+def data_analysis(st_lib: ModuleType, **state: dict) -> None:
     custom_css(background_path="res/neon_court2.png")
     plt.style.use("ggplot")
 
     # Page header.
-    _, header_image_container, _ = st.columns([1, 4, 1])
+    _, header_image_container, _ = st_lib.columns([1, 4, 1])
     header_image_container.image(
         "res/court3.png", caption="Imagery: ASB TPoint Squash Courts"
     )
-    header_text_container = st.container()
+    header_text_container = st_lib.container()
     header_text_container.title(
         """
         A Brief Adventure into Finnish Squash Tournament Data
         """
     )
 
-    author_container = st.container()
+    author_container = st_lib.container()
     author_container.markdown(
         """
         > Visit the repo [github.com/ilmarivikstrom/clublocker](https://github.com/ilmarivikstrom/clublocker)
@@ -69,26 +69,26 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
 
     author_container.markdown("---")
 
-    introduction_container = st.container()
+    introduction_container = st_lib.container()
     introduction_container.markdown(
         """
         # 1. Introduction
         In 2021, [Finnish Squash Association (FSA) reported](https://www.squash.fi/Hallitutkimus+2021) that the Finnish squash scene had experienced significant growth during the past three years. A year later, FSA presented [encouraging study results](https://www.squash.fi/Squashin+kiinnostus+kasvussa) about the increased interest in squash in Finland.
-        
+
         The key takeaways from the articles are the following:
         - over **500,000** Finnish people are interested in squash in 2022
         - growth of **over 70%** compared to the previous years
-        
+
         This growth is visible to any hobbyist that is looking to book courts. Rewinding the previous years, it is evident that squash courts are in higher demand today (Q4/2022) than in recent history. My personal experience suggests that truckloads of newcomers, in particular, are finding the courts and enjoying the sport. This phenomenon is very clear at least in Helsinki during primetime hours.
-        
+
         > *"These results are great news for the sport, no?"*
 
         Well, yes!!
 
         > *"Are we experiencing some kind of a squash renaissance? Are the dark days already behind us?"*
-        
+
         We don't know yet. While increased interest is a healthy signal, it does not paint us the whole view. There are many unanswered questions, like **can we see the growth in competitive squash as well?** The linked FSA articles did not consider the trends in competitive squash at all. I have not seen a single proper analysis where tournament statistics are being discussed thoroughly. To be frank, there aren't any good reasons why such an analysis has not been conducted. The data from all tournaments, matches, and league activities are publicly available from the FSA Club Locker portal. In this report, we are scraping the data from Club Locker and performing the analysis.
-        
+
         This report attempts to showcase the open squash tournament data for the public. The following objectives have guided my work:
         - present the historical data in a human-readable format
         - find patterns and draw insights from the data
@@ -104,7 +104,7 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
     )
     introduction_container.markdown("---")
 
-    loading_container = st.container()
+    loading_container = st_lib.container()
     loading_container.markdown(
         """
         # 2. Loading and pre-processing the Club Locker tournament data
@@ -116,11 +116,11 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
         """
     )
 
-    tournaments_df = load_tournaments(skip=config.data["skip_fetch"])
+    tournaments_df = load_tournaments(skip=config_file.data["skip_fetch"])
     matches_df = load_matches(
-        skip=config.data["skip_fetch"], tournaments_df=tournaments_df
+        skip=config_file.data["skip_fetch"], tournaments_df=tournaments_df
     )
-    rankings_df = load_rankings(skip=config.data["skip_fetch"])
+    rankings_df = load_rankings(skip=config_file.data["skip_fetch"])
 
     loading_container.info(
         f"Tournament data is ready! The data covers **{len(tournaments_df)} tournaments** from {str(tournaments_df['StartDatePandas'].min().date())} until {str(tournaments_df['StartDatePandas'].max().date())}."
@@ -134,9 +134,13 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
     loading_container.success("⬇ All data has been fetched. Let's move on! ⬇")
     loading_container.markdown("---")
 
-    st.sidebar.markdown(
+    st_lib.sidebar.markdown(
+        """<h1 style="text-align:center;">Table of Contents</h1>""",
+        unsafe_allow_html=True,
+    )
+
+    st_lib.sidebar.markdown(
         """
-        # Table of Contents
         - [1. Introduction](#1-introduction)
         - [2. Loading and Pre-Processing the Club Locker Tournament Data](#2-loading-and-pre-processing-the-club-locker-tournament-data)
         - [3. Overview of the Tournament Data](#3-overview-of-the-tournament-data)
@@ -155,31 +159,32 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
         """
     )
 
-    st.sidebar.markdown(
+    st_lib.sidebar.markdown(
         """
-        #### Interested in the datasets? Download from here.
-        """
+        <h1 style="text-align:center;">Datasets</h1>
+        """,
+        unsafe_allow_html=True,
     )
-    st.sidebar.download_button(
+    st_lib.sidebar.download_button(
         label="Tournament data",
         data=convert_df_to_csv(tournaments_df),
         file_name=f"tournaments_{str(get_latest_pickle_date('data/tournaments*'))}.csv",
         mime="text/csv",
     )
-    st.sidebar.download_button(
+    st_lib.sidebar.download_button(
         label="Match data",
         data=convert_df_to_csv(matches_df),
         file_name=f"matches_{str(get_latest_pickle_date('data/matches*'))}.csv",
         mime="text/csv",
     )
-    st.sidebar.download_button(
+    st_lib.sidebar.download_button(
         label="Ranking data",
         data=convert_df_to_csv(rankings_df),
         file_name=f"rankings_{str(get_latest_pickle_date('data/rankings*'))}.csv",
         mime="text/csv",
     )
 
-    tournament_container = st.container()
+    tournament_container = st_lib.container()
 
     tournament_container.markdown(
         f"""
@@ -190,7 +195,7 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
         #### 3.1 First things first: some fun statistics
 
         Club Locker history contains **{len(tournaments_df)}** tournaments and **{len(matches_df)}** matches. Here are some cool insights:
-        
+
         - Total number of games: **{matches_df["NumberOfGames"].sum()}**
         - Total number of rallies: **{matches_df["Rallies"].sum()}**
         - Total time spent on court: **{matches_df["MatchDuration"].sum()}** minutes = **{int(matches_df["MatchDuration"].sum()/60)}** hours = **{round(matches_df["MatchDuration"].sum()/(60*24), 1)}** days
@@ -210,7 +215,7 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
         The number of tournament participants is a great metric for gauging interest in competitive squash. Let's visualize the tournament participation by representing each tournament with a colored circle. The color signals if the tournament was held before or after the pandemic started.
         """
     )
-    fig, ax = plt.subplots()
+    fig, axes = plt.subplots()
     fig.tight_layout()
     sn.scatterplot(
         data=tournaments_df.sort_values("StartDatePandas"),
@@ -227,16 +232,16 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
         scatter=False,
         order=2,
     )
-    ax.set_xlabel("Tournament date")
-    ax.set_ylabel("Players in a tournament")
-    ax.xaxis.set_major_locator(mdates.YearLocator())
-    xticks = ax.get_xticks()
+    axes.set_xlabel("Tournament date")
+    axes.set_ylabel("Players in a tournament")
+    axes.xaxis.set_major_locator(mdates.YearLocator())
+    xticks = axes.get_xticks()
     xticks_dates = [pd.to_datetime(dt.date.fromordinal(int(x))).date() for x in xticks]
     xticks_dates = [
         x + pd.Timedelta(1, "d") if x.day == 31 else x for x in xticks_dates
     ]
-    ax.set_xticklabels(xticks_dates)
-    for label in ax.get_xticklabels(which="major"):
+    axes.set_xticklabels(xticks_dates)
+    for label in axes.get_xticklabels(which="major"):
         label.set(rotation=30, horizontalalignment="center", fontsize=8)
     tournament_container.pyplot(fig)
     tournament_container.markdown(
@@ -247,17 +252,17 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
     tournament_container.markdown(
         """
         Looking at Figure 1, we can see a few different things. The first clear observation is that the largest tournaments were held in the pre-covid era. When taking a bit more careful look at the data, we can see the quiet summer breaks and the lockdown months. If we exclude the lockdown periods, the density of the tournament calendar seems to be relatively the same for the whole history.
-        
+
         The red line skewering the graph is a 2nd-order polynomial model fitted on the data. This model shows the general trend of tournament participation. The trend shows the harsh truth, which is that there has been a clear decreasing trend for a long time.
         """
     )
 
     tournament_container.markdown(
-        f"""
+        """
         Let's plot the same tournament participation data in a way where it is easy to compare the same months of different years.
         """
     )
-    fig, ax = plt.subplots()
+    fig, axes = plt.subplots()
 
     tournament_players_months_weeks = (
         tournaments_df.groupby(by=["Month", "Year"])
@@ -359,7 +364,7 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
 
     tournament_container.markdown("---")
 
-    player_activity_container = st.container()
+    player_activity_container = st_lib.container()
     show_results = 20
     player_activity_container.markdown("# 4. Overview of the player data")
     player_activity_container.markdown(
@@ -397,19 +402,19 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
         ["LoserPlayer", "WinnerPlayer"]
     ]
 
-    fig, ax = plt.subplots()
+    fig, axes = plt.subplots()
     sn.barplot(
         data=active_players_df.head(show_results),
         x="TotalMatches",
         y="Player",
         palette=sn.color_palette("husl", show_results * 20),
     )
-    ax.set_xlabel("Number of played matches")
-    ax.set_ylabel("Player name")
+    axes.set_xlabel("Number of played matches")
+    axes.set_ylabel("Player name")
 
     player_activity_container.pyplot(fig)
     player_activity_container.markdown(
-        caption_text(f"Figure 3", f"Top {show_results} most active players."),
+        caption_text("Figure 3", f"Top {show_results} most active players."),
         unsafe_allow_html=True,
     )
 
@@ -428,15 +433,15 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
     common_matchups_df["Matchup"] = common_matchups_df["Player1"].str.cat(
         common_matchups_df["Player2"], sep=" vs. "
     )
-    fig, ax = plt.subplots()
+    fig, axes = plt.subplots()
     sn.barplot(
         data=common_matchups_df.head(show_results),
         x="matchid",
         y="Matchup",
         palette=sn.color_palette("husl", show_results * 20),
     )
-    ax.set_xlabel("Number of played matches")
-    ax.set_ylabel("Matchup")
+    axes.set_xlabel("Number of played matches")
+    axes.set_ylabel("Matchup")
     player_activity_container.pyplot(fig)
     player_activity_container.markdown(
         caption_text("Figure 4", f"Top {show_results} toughest rivalries."),
@@ -450,7 +455,7 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
 
     player_activity_container.markdown("---")
 
-    demographics_container = st.container()
+    demographics_container = st_lib.container()
     demographics_container.markdown(
         """
         # 5. Demographics
@@ -464,32 +469,31 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
         Squash is a sport for all ages. Due to that, there are active competitive players in almost all imaginable age groups. Let's see what is the age distribution in competitive squash players. Each bar represents a span of {bin_width} years, e.g. all players between 32 and 34 years.
         """
     )
-    MULTIPLE_TYPE = "stack"
-    fig, ax = plt.subplots()
+    fig, axes = plt.subplots()
     sn.histplot(
         data=rankings_df.rename(columns={"division": "Category"}),
         x="age",
         hue="Category",
-        multiple=MULTIPLE_TYPE,
+        multiple="stack",
         binwidth=bin_width,
         palette=custom_palette_3,
     )
-    ax.set_xlim((0, 90))
-    ax.set_xlabel("Player age")
-    ax.set_ylabel("Player count")
+    axes.set_xlim((0, 90))
+    axes.set_xlabel("Player age")
+    axes.set_ylabel("Player count")
     demographics_container.pyplot(fig)
     demographics_container.markdown(
-        caption_text("Figure 5", f"Age distribution of competitive players."),
+        caption_text("Figure 5", "Age distribution of competitive players."),
         unsafe_allow_html=True,
     )
     demographics_container.markdown(
-        f"""
+        """
         There's a few clear things we can see in this stacked bar chart. With a couple of exceptions, there seem to be significantly more men players in almost all age groups. Juniors between 10 and 20 years in age dominate the chart, which is expected. There is a huge drop off between 20 to 42, while the 42 to 64 year olds represents an age group with considerable depth.
         """
     )
 
     demographics_container.markdown(
-        f"""
+        """
         #### 5.2 Player's age vs. ranking
         As squash is a physically demanding sport, it would make sense that the players' physical development reflects in the rankings as well. While it is possible for anyone to improve their physical condition in any age, there is a correlation between individual's age and their physical condition. With this in mind, let's see how our competitive players of different ages show up in the rankings.
         """
@@ -498,9 +502,9 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
     (
         demographics_subplot_column1_container,
         demographics_subplot_column2_container,
-    ) = st.columns(2)
+    ) = st_lib.columns(2)
     start_xlim, end_xlim = (0, 90)
-    fig, ax = plt.subplots()
+    fig, axes = plt.subplots()
     sn.scatterplot(
         data=rankings_df.rename(
             columns={"division": "Category", "age": "Player age", "ranking": "Ranking"}
@@ -520,7 +524,7 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
         alpha=0.5,
         palette=[custom_palette_3[0]],
     )
-    ax.set_xlim(start_xlim, end_xlim)
+    axes.set_xlim(start_xlim, end_xlim)
     demographics_subplot_column1_container.pyplot(fig)
     demographics_subplot_column1_container.markdown(
         caption_text("Figure 6", "Ranking as a function of age in men."),
@@ -528,7 +532,7 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
     )
 
     start_xlim, end_xlim = (0, 90)
-    fig, ax = plt.subplots()
+    fig, axes = plt.subplots()
     sn.scatterplot(
         data=rankings_df.rename(
             columns={"division": "Category", "age": "Player age", "ranking": "Ranking"}
@@ -548,17 +552,17 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
         alpha=0.5,
         palette=[custom_palette_3[1]],
     )
-    ax.set_xlim(start_xlim, end_xlim)
+    axes.set_xlim(start_xlim, end_xlim)
     demographics_subplot_column2_container.pyplot(fig)
     demographics_subplot_column2_container.markdown(
         caption_text("Figure 7", "Ranking as a function of age in women."),
         unsafe_allow_html=True,
     )
 
-    demographics_contd_container = st.container()
+    demographics_contd_container = st_lib.container()
 
     demographics_contd_container.markdown(
-        f"""
+        """
         It is cool to see, that the development during junior years is so pronounced in the chart. There is a similar trend in the other end: the men's ranking (in particular) seems to plummet in players that are older than 60 years.
 
         The top players seem to represent a wide age group. For men, the top players are between 20 and 50 years old, while the top women players are between 16 and 50 years old.
@@ -566,28 +570,28 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
     )
     demographics_contd_container.markdown("---")
 
-    match_container = st.container()
+    match_container = st_lib.container()
 
     match_container.markdown(
-        f"""
+        """
         # 6. Overview of the match data
         There are probably a million ways of studying the Club Locker data. For this report, we can only do a few. In the next section, we are going to briefly touch the relatively uncovered match data.
         """
     )
     match_container.markdown("")
     match_container.markdown(
-        f"""
+        """
         #### 6.1 Games, rallies and minutes in matches
         In the beginning we learned about total number of matches played, total number of rallies, and so on. There are mysteries to uncover, for example, we still do not have a clue about how many 5-game matches are played compared to 3-game matches. Let's plot the data over "total number of rallies", and see what's up.
         """
     )
     match_container.markdown("")
-    fig, ax = plt.subplots()
+    fig, axes = plt.subplots()
     fig.tight_layout()
-    ax.set_xlabel("Number of rallies")
-    ax.set_ylabel("Match count")
+    axes.set_xlabel("Number of rallies")
+    axes.set_ylabel("Match count")
     sn.histplot(
-        ax=ax,
+        ax=axes,
         data=matches_df.rename(
             columns={
                 "NumberOfGames": "Games",
@@ -600,7 +604,7 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
         legend=True,
         palette=custom_palette_3,
     )
-    ax.set_xlim(20, 120)
+    axes.set_xlim(20, 120)
     match_container.pyplot(fig)
     match_container.markdown(
         caption_text("Figure 8", "Games and rallies over the complete match dataset."),
@@ -608,15 +612,15 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
     )
 
     match_container.markdown(
-        f"""
+        """
         Clearly, the majority of matches are 3-game matches with around 50 rallies in total, while the most common 4-game match ends in 73 rallies. There are significantly less 5-game matches, with the longest being around 120 rallies long. Interesting!
 
         Alright Captain Obvious, we have seen that if you have more games, you also have more rallies. What about the match length in minutes? Well:
         """
     )
-    fig, ax = plt.subplots()
-    ax.set_xlabel("Match duration (minutes)")
-    ax.set_ylabel("Number of rallies")
+    fig, axes = plt.subplots()
+    axes.set_xlabel("Match duration (minutes)")
+    axes.set_ylabel("Number of rallies")
     sn.scatterplot(
         data=matches_df.rename(
             columns={
@@ -630,7 +634,7 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
         palette=custom_palette_3,
         linewidth=0,
     )
-    ax.set_xlim(-5, 90)
+    axes.set_xlim(-5, 90)
     match_container.pyplot(fig)
     match_container.markdown(
         caption_text("Figure 9", "Games and rallies as a function of match duration."),
@@ -638,19 +642,19 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
     )
 
     match_container.markdown(
-        f"""
+        """
         This time we are looking at a scatter plot. The darker the spot on the plot, the more overlapping data points there are.
-        
+
         The data points around 0-minute area represent matches that have been input to Club Locker in mere seconds. This is most probably due to inserting the matches into Club Locker retroactively post-match. It is unreasonable to think that the matches actually took less than a few minutes.
 
         Let's look at the same data from a slightly different perspective:
         """
     )
 
-    fig, ax = plt.subplots()
+    fig, axes = plt.subplots()
     fig.tight_layout()
     sn.histplot(
-        ax=ax,
+        ax=axes,
         data=matches_df.rename(
             columns={
                 "NumberOfGames": "Games",
@@ -663,8 +667,8 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
         legend=True,
         palette=custom_palette_3,
     )
-    ax.set_xlim(-5, 90)
-    ax.set_xlabel("Match duration (minutes)")
+    axes.set_xlim(-5, 90)
+    axes.set_xlabel("Match duration (minutes)")
     match_container.pyplot(fig)
     match_container.markdown(
         caption_text("Figure 10", "Distribution of match durations."),
@@ -672,14 +676,14 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
     )
 
     match_container.markdown(
-        f"""
+        """
         It is interesting to note that so many of the 3-game matches are less than 20 minutes long. You could roughly say, that 4-game matches are around 25 minutes long and 5-game matches are around 35 minutes long. Some of the longest 5-gamers are around 80 minutes in length.
         """
     )
 
-    ending_container = st.container()
+    ending_container = st_lib.container()
     ending_container.markdown(
-        f"""
+        """
         # 7. The End
         Congratulations - you have reached the end of the study! In this study, we took a brief look on the Club Locker competition data and perhaps learned something new. I am not going to iterate the findings in any more depth in this section.
 
@@ -695,44 +699,45 @@ def data_analysis(st: ModuleType, **state: dict) -> None:
     )
 
 
-def player_vs_player(st: ModuleType, **state: dict) -> None:
+def player_vs_player(st_lib: ModuleType, **state: dict) -> None:
     custom_css(background_path="res/neon_court4.png")
-    _, header_image_container, _ = st.columns([1, 4, 1])
+    _, header_image_container, _ = st_lib.columns([1, 4, 1])
     header_image_container.image(
         "res/court4.png", caption="Imagery: ASB TPoint Squash Courts"
     )
-    header_text_container = st.container()
+    header_text_container = st_lib.container()
     header_text_container.title(
         """
         Player vs. Player Analyzer
         """
     )
 
-    author_container = st.container()
+    author_container = st_lib.container()
     author_container.markdown(
         """
         > Visit the repo [github.com/ilmarivikstrom/clublocker](https://github.com/ilmarivikstrom/clublocker)
 
         > Connect on [https://linkedin.com/in/ilmarivikstrom](https://linkedin.com/in/ilmarivikstrom)
+
+        > For the "Tournament Data Study", open sidebar and navigate there using the dropdown menu.
         """
     )
 
     author_container.markdown("---")
-    loading_container = st.container()
+    loading_container = st_lib.container()
     loading_container.markdown(
         """
         This tool allows you to pick and compare two individual players with each other. Please go ahead and pick the players from the dropdown menus.
         """
     )
 
-    # TODO: Do data loading somewhere else? Maybe a landing page.
-    tournaments_df = load_tournaments(skip=config.data["skip_fetch"])
+    tournaments_df = load_tournaments(skip=config_file.data["skip_fetch"])
     matches_df = load_matches(
-        skip=config.data["skip_fetch"], tournaments_df=tournaments_df
+        skip=config_file.data["skip_fetch"], tournaments_df=tournaments_df
     )
-    rankings_df = load_rankings(skip=config.data["skip_fetch"])
+    rankings_df = load_rankings(skip=config_file.data["skip_fetch"])
 
-    player_1_selection_container, player_2_selection_container = st.columns(2)
+    player_1_selection_container, player_2_selection_container = st_lib.columns(2)
     unique_player_names = np.sort(
         pd.unique(matches_df[["vPlayerName", "hPlayerName"]].values.ravel("K"))
     )
@@ -801,7 +806,7 @@ def player_vs_player(st: ModuleType, **state: dict) -> None:
     if player_1_name == player_2_name and (
         player_1_name != "Select a player" and player_2_name != "Select a player"
     ):
-        error_container = st.container()
+        error_container = st_lib.container()
         error_container.error("Please select two different players.")
     elif player_1_ok and player_2_ok:
         if (player_1_name != "Select a player") and (
@@ -1010,7 +1015,7 @@ def player_vs_player(st: ModuleType, **state: dict) -> None:
                     ),
                 ],
             }
-            comparison_container = st.container()
+            comparison_container = st_lib.container()
             dataframe = pd.DataFrame.from_dict(data)
             dataframe = dataframe.set_index("Name")
             dark_green = "#00ff0033"
@@ -1035,7 +1040,7 @@ def player_vs_player(st: ModuleType, **state: dict) -> None:
 
 
 app = MultiPage(navbar_style="SelectBox", hide_navigation=True)
-app.st = st
+app.st = streamlit
 
 app.add_app("Tournament Data Study", data_analysis)
 app.add_app("Player vs. Player Analyzer", player_vs_player)
