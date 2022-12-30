@@ -29,6 +29,7 @@ from utils.styles import *
 display_mode = config.display["mode"]
 
 # Basic configurations
+
 pd.options.mode.chained_assignment = None
 st.set_page_config(
     page_title=config.display["main_title"],
@@ -39,7 +40,7 @@ st.set_page_config(
 )
 
 
-def data_analysis(st: ModuleType, **state: dict):
+def data_analysis(st: ModuleType, **state: dict) -> None:
     custom_css(background_path="res/neon_court2.png")
     plt.style.use("ggplot")
 
@@ -494,12 +495,24 @@ def data_analysis(st: ModuleType, **state: dict):
         """
     )
     divisions = ["All Men", "All Women"]
-    demographics_subplot_column1_container, demographics_subplot_column2_container = st.columns(2)
+    (
+        demographics_subplot_column1_container,
+        demographics_subplot_column2_container,
+    ) = st.columns(2)
     start_xlim, end_xlim = (0, 90)
     fig, ax = plt.subplots()
     sn.scatterplot(
-        data=rankings_df.rename(columns={"division": "Category", "age": "Player age", "ranking": "Ranking"}).loc[
-            rankings_df.rename(columns={"division": "Category", "age": "Player age", "ranking": "Ranking"})["Category"] == divisions[0]
+        data=rankings_df.rename(
+            columns={"division": "Category", "age": "Player age", "ranking": "Ranking"}
+        ).loc[
+            rankings_df.rename(
+                columns={
+                    "division": "Category",
+                    "age": "Player age",
+                    "ranking": "Ranking",
+                }
+            )["Category"]
+            == divisions[0]
         ],
         x="Player age",
         y="Ranking",
@@ -517,8 +530,17 @@ def data_analysis(st: ModuleType, **state: dict):
     start_xlim, end_xlim = (0, 90)
     fig, ax = plt.subplots()
     sn.scatterplot(
-        data=rankings_df.rename(columns={"division": "Category", "age": "Player age", "ranking": "Ranking"}).loc[
-            rankings_df.rename(columns={"division": "Category", "age": "Player age", "ranking": "Ranking"})["Category"] == divisions[1]
+        data=rankings_df.rename(
+            columns={"division": "Category", "age": "Player age", "ranking": "Ranking"}
+        ).loc[
+            rankings_df.rename(
+                columns={
+                    "division": "Category",
+                    "age": "Player age",
+                    "ranking": "Ranking",
+                }
+            )["Category"]
+            == divisions[1]
         ],
         x="Player age",
         y="Ranking",
@@ -534,7 +556,6 @@ def data_analysis(st: ModuleType, **state: dict):
     )
 
     demographics_contd_container = st.container()
-
 
     demographics_contd_container.markdown(
         f"""
@@ -674,7 +695,7 @@ def data_analysis(st: ModuleType, **state: dict):
     )
 
 
-def player_vs_player(st, **state):
+def player_vs_player(st: ModuleType, **state: dict) -> None:
     custom_css(background_path="res/neon_court4.png")
     _, header_image_container, _ = st.columns([1, 4, 1])
     header_image_container.image(

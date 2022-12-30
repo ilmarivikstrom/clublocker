@@ -140,3 +140,5 @@ def color_covid(v: str) -> str:
         return f"color: #daaa4c;"
     elif v == "post":
         return f"color: #a7003c;"
+    else:
+        return ""
