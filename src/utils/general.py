@@ -1,4 +1,5 @@
 import base64
+
 import pandas as pd
 import streamlit as st
 
@@ -8,7 +9,7 @@ def convert_df_to_csv(df_to_convert: pd.DataFrame) -> str:
     return df_to_convert.to_csv().encode("utf-8")
 
 
-def hide_table_row_index():
+def hide_table_row_index() -> str:
     hide_table_row_index = """
                 <style>
                 thead tr th:first-child {display:none}
@@ -130,11 +131,11 @@ def custom_css(background_path: str) -> None:
     )
 
 
-def caption_text(name, text):
+def caption_text(name: str, text: str) -> str:
     return f"<p style='text-align: center; color: #d4d4d4; font-size: 0.8em;'><strong>{name}</strong>   {text}</p>"
 
 
-def color_covid(v):
+def color_covid(v: str) -> str:
     if v == "pre":
         return f"color: #daaa4c;"
     elif v == "post":

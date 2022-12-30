@@ -6,27 +6,26 @@ import numpy as np
 import pandas as pd
 import seaborn as sn
 import streamlit as st
+from types import ModuleType
 
+import config
 from streamlit_multipage import MultiPage
-
 from utils.extraction import (
+    get_latest_pickle_date,
     load_matches,
     load_rankings,
     load_tournaments,
-    get_latest_pickle_date,
 )
 from utils.general import (
     caption_text,
     color_covid,
-    custom_css,
     convert_df_to_csv,
+    custom_css,
     hide_table_row_index,
 )
 from utils.styles import *
 
-import config
-
-# Set display_mode to either "dev" or "prod".
+# Display mode either "dev" or "prod" from config.
 display_mode = config.display["mode"]
 
 # Basic configurations
@@ -40,7 +39,7 @@ st.set_page_config(
 )
 
 
-def data_analysis(st, **state):
+def data_analysis(st: ModuleType, **state: dict):
     custom_css(background_path="res/neon_court2.png")
     plt.style.use("ggplot")
 
@@ -96,8 +95,12 @@ def data_analysis(st, **state):
         - take a step toward a more data-driven future and decision making
         """
     )
-    introduction_container.info("Disclaimer: I have done my best to ensure the analysis is done properly without any major mistakes or misconclusions. However, such software bugs or misunderstandings may still exist in the following analysis.")
-    introduction_container.markdown("#### Alright! With all of these out of the way, let's dive in.")
+    introduction_container.info(
+        "Disclaimer: I have done my best to ensure the analysis is done properly without any major mistakes or misconclusions. However, such software bugs or misunderstandings may still exist in the following analysis."
+    )
+    introduction_container.markdown(
+        "#### Alright! With all of these out of the way, let's dive in."
+    )
     introduction_container.markdown("---")
 
     loading_container = st.container()
@@ -141,7 +144,7 @@ def data_analysis(st, **state):
         - [4. Overview of the player data](#4-overview-of-the-player-data)
           - [4.1 The most active players](#4-1-the-most-active-players)
           - [4.2 The toughest rivalries](#4-2-the-toughest-rivalries)
-        - [5. Player demographics](#5-player-demographics)
+        - [5. Demographics](#5-demographics)
           - [5.1 Age of the player base](#5-1-age-of-the-player-base)
           - [5.2 Player's age vs. ranking](#5-2-player-s-age-vs-ranking)
         - [6. Overview of the match data](#6-overview-of-the-match-data)
@@ -356,7 +359,7 @@ def data_analysis(st, **state):
     tournament_container.markdown("---")
 
     player_activity_container = st.container()
-    show_results = 25
+    show_results = 20
     player_activity_container.markdown("# 4. Overview of the player data")
     player_activity_container.markdown(
         """
@@ -368,11 +371,6 @@ def data_analysis(st, **state):
         #### 4.1 The most active players
         The tournaments cannot happen without an active base of competitive players. The rankings include hundreds and hundreds of competitive players, but it would be interesting to know who exactly are the players that participate the most. Here is a list of the top {show_results} active players in descending order!
         """
-    )
-
-    unique_player_names = list(
-        set(matches_df["WinnerPlayer"].values.tolist())
-        | set(matches_df["LoserPlayer"].values.tolist())
     )
 
     active_players_df = (
@@ -454,7 +452,7 @@ def data_analysis(st, **state):
     demographics_container = st.container()
     demographics_container.markdown(
         """
-        # 5. Player demographics
+        # 5. Demographics
         So far we have learned about some general statistics about tournaments, which players are the most active and what are the most common matchups. It is now time to zoom out and look at the whole competitive player base.
         """
     )
@@ -462,7 +460,7 @@ def data_analysis(st, **state):
     demographics_container.markdown(
         f"""
         #### 5.1 Age of the player base
-        Squash is a sport for all ages. Due to that, there are active competitive players in almost all imaginable age groups. Let's see what is the age distribution in competitive squash players. Each bar represents {bin_width} years, e.g. all players between 32 and 34 years.
+        Squash is a sport for all ages. Due to that, there are active competitive players in almost all imaginable age groups. Let's see what is the age distribution in competitive squash players. Each bar represents a span of {bin_width} years, e.g. all players between 32 and 34 years.
         """
     )
     MULTIPLE_TYPE = "stack"
@@ -477,6 +475,7 @@ def data_analysis(st, **state):
     )
     ax.set_xlim((0, 90))
     ax.set_xlabel("Player age")
+    ax.set_ylabel("Player count")
     demographics_container.pyplot(fig)
     demographics_container.markdown(
         caption_text("Figure 5", f"Age distribution of competitive players."),
@@ -484,7 +483,7 @@ def data_analysis(st, **state):
     )
     demographics_container.markdown(
         f"""
-        There's a few clear things we can see in this stacked bar chart. With a couple of exceptions, there seem to be significantly more male players in almost all age groups. Juniors between 10 and 20 years in age dominate the chart, which is expected. There is a huge drop off between 20 to 42, while the 42 to 64 year olds represents an age group with considerable depth.
+        There's a few clear things we can see in this stacked bar chart. With a couple of exceptions, there seem to be significantly more men players in almost all age groups. Juniors between 10 and 20 years in age dominate the chart, which is expected. There is a huge drop off between 20 to 42, while the 42 to 64 year olds represents an age group with considerable depth.
         """
     )
 
@@ -495,34 +494,56 @@ def data_analysis(st, **state):
         """
     )
     divisions = ["All Men", "All Women"]
+    demographics_subplot_column1_container, demographics_subplot_column2_container = st.columns(2)
     start_xlim, end_xlim = (0, 90)
     fig, ax = plt.subplots()
     sn.scatterplot(
-        data=rankings_df.rename(columns={"division": "Category"}).loc[
-            rankings_df.rename(columns={"division": "Category"})["Category"].isin(
-                divisions
-            )
+        data=rankings_df.rename(columns={"division": "Category", "age": "Player age", "ranking": "Ranking"}).loc[
+            rankings_df.rename(columns={"division": "Category", "age": "Player age", "ranking": "Ranking"})["Category"] == divisions[0]
         ],
-        x="age",
-        y="ranking",
+        x="Player age",
+        y="Ranking",
         hue="Category",
         alpha=0.5,
-        palette=custom_palette_3,
+        palette=[custom_palette_3[0]],
     )
     ax.set_xlim(start_xlim, end_xlim)
-    demographics_container.pyplot(fig)
-    demographics_container.markdown(
-        caption_text("Figure 6", "Ranking as a function of age."),
+    demographics_subplot_column1_container.pyplot(fig)
+    demographics_subplot_column1_container.markdown(
+        caption_text("Figure 6", "Ranking as a function of age in men."),
         unsafe_allow_html=True,
     )
-    demographics_container.markdown(
-        f"""
-        It is cool to see, that the development during junior years is so pronounced in the chart. There is a similar trend in the other end: the male ranking (in particular) seems to plummet in players that are older than 60 years.
 
-        The top players seem to represent a wide age group. In males the top players are between 20 and 50 years old, while in females the top players are between 16 and 50.
+    start_xlim, end_xlim = (0, 90)
+    fig, ax = plt.subplots()
+    sn.scatterplot(
+        data=rankings_df.rename(columns={"division": "Category", "age": "Player age", "ranking": "Ranking"}).loc[
+            rankings_df.rename(columns={"division": "Category", "age": "Player age", "ranking": "Ranking"})["Category"] == divisions[1]
+        ],
+        x="Player age",
+        y="Ranking",
+        hue="Category",
+        alpha=0.5,
+        palette=[custom_palette_3[1]],
+    )
+    ax.set_xlim(start_xlim, end_xlim)
+    demographics_subplot_column2_container.pyplot(fig)
+    demographics_subplot_column2_container.markdown(
+        caption_text("Figure 7", "Ranking as a function of age in women."),
+        unsafe_allow_html=True,
+    )
+
+    demographics_contd_container = st.container()
+
+
+    demographics_contd_container.markdown(
+        f"""
+        It is cool to see, that the development during junior years is so pronounced in the chart. There is a similar trend in the other end: the men's ranking (in particular) seems to plummet in players that are older than 60 years.
+
+        The top players seem to represent a wide age group. For men, the top players are between 20 and 50 years old, while the top women players are between 16 and 50 years old.
         """
     )
-    demographics_container.markdown("---")
+    demographics_contd_container.markdown("---")
 
     match_container = st.container()
 
@@ -561,7 +582,7 @@ def data_analysis(st, **state):
     ax.set_xlim(20, 120)
     match_container.pyplot(fig)
     match_container.markdown(
-        caption_text("Figure 7", "Games and rallies over the complete match dataset."),
+        caption_text("Figure 8", "Games and rallies over the complete match dataset."),
         unsafe_allow_html=True,
     )
 
@@ -569,7 +590,7 @@ def data_analysis(st, **state):
         f"""
         Clearly, the majority of matches are 3-game matches with around 50 rallies in total, while the most common 4-game match ends in 73 rallies. There are significantly less 5-game matches, with the longest being around 120 rallies long. Interesting!
 
-        Alright Captain Obvious, we have seen that if you have more games, you also have more rallies. What about the match length in minutes? Say no more:
+        Alright Captain Obvious, we have seen that if you have more games, you also have more rallies. What about the match length in minutes? Well:
         """
     )
     fig, ax = plt.subplots()
@@ -584,20 +605,22 @@ def data_analysis(st, **state):
         x="MatchDuration",
         y="Rallies",
         hue="Games",
-        alpha=0.2,
+        alpha=0.15,
         palette=custom_palette_3,
         linewidth=0,
     )
     ax.set_xlim(-5, 90)
     match_container.pyplot(fig)
     match_container.markdown(
-        caption_text("Figure 8", "Games and rallies as a function of match duration."),
+        caption_text("Figure 9", "Games and rallies as a function of match duration."),
         unsafe_allow_html=True,
     )
 
     match_container.markdown(
         f"""
-        This time we are looking at a scatter plot. The colorful dots around 0-minute area represent matches that have been input to Club Locker in mere seconds. There's no reason to think that the matches actually took less than a few minutes.
+        This time we are looking at a scatter plot. The darker the spot on the plot, the more overlapping data points there are.
+        
+        The data points around 0-minute area represent matches that have been input to Club Locker in mere seconds. This is most probably due to inserting the matches into Club Locker retroactively post-match. It is unreasonable to think that the matches actually took less than a few minutes.
 
         Let's look at the same data from a slightly different perspective:
         """
@@ -623,13 +646,13 @@ def data_analysis(st, **state):
     ax.set_xlabel("Match duration (minutes)")
     match_container.pyplot(fig)
     match_container.markdown(
-        caption_text("Figure 9", "Distribution of match durations."),
+        caption_text("Figure 10", "Distribution of match durations."),
         unsafe_allow_html=True,
     )
 
     match_container.markdown(
         f"""
-        It's interesting to see that so many of the 3-game matches are less than 20 minutes long. You could roughly say, that 4-game matches are around 25 minutes long and 5-game matches are around 35 minutes long. Some of the longest 5-gamers are around 80 minutes in length.
+        It is interesting to note that so many of the 3-game matches are less than 20 minutes long. You could roughly say, that 4-game matches are around 25 minutes long and 5-game matches are around 35 minutes long. Some of the longest 5-gamers are around 80 minutes in length.
         """
     )
 
