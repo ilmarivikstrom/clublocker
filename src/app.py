@@ -112,6 +112,8 @@ def data_analysis(st_lib: ModuleType, **state: dict) -> None:
 
         It should be noted, that **only tournament data is considered** in this study. This means that league matches, box league matches, etc., are omitted from the dataset.
 
+        In order to ensure a nice and consistent experience, the analysis takes in account all the data **only until the end of year 2022**.
+
         You can advance in the analysis only after the data has been loaded, so *please hold on tight while we get the things ready for you...*
         """
     )
