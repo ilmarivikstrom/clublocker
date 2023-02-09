@@ -730,6 +730,8 @@ def player_vs_player(st_lib: ModuleType, **state: dict) -> None:
     loading_container.markdown(
         """
         This tool allows you to pick and compare two individual players with each other. Please go ahead and pick the players from the dropdown menus.
+
+        **Note:** The data shown here is from the end of year 2022.
         """
     )
 
