@@ -80,7 +80,6 @@ class StateManager:
         namespaces: List[str] = None,
         all_variables: bool = False,
     ) -> None:
-
         if not variables or not namespaces:
             return
 
@@ -231,7 +230,6 @@ class MultiPage:
         return True
 
     def _run(self) -> None:
-
         if self.hide_menu:
             hide_menu = """
                 <style>

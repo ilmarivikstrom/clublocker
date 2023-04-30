@@ -267,10 +267,11 @@ def data_analysis(st_lib: ModuleType, **state: dict) -> None:
     fig, axes = plt.subplots()
 
     tournament_players_months_weeks = (
-        tournaments_df.groupby(by=["Month", "Year"])
+        tournaments_df[["Year", "Month", "NumPlayers"]]
+        .groupby(by=["Month", "Year"])
         .sum()[["NumPlayers"]]
         .reset_index()
-        .pivot("Year", "Month", "NumPlayers")
+        .pivot(columns=["Year"], index=["Month"], values=["NumPlayers"])
         .fillna(0)
         .astype(int)
     )
@@ -283,7 +284,9 @@ def data_analysis(st_lib: ModuleType, **state: dict) -> None:
         square=False,
         fmt="d",
         annot=True,
+        xticklabels=tournaments_df["Year"].unique().tolist(),
     )
+    axes.set_xlabel("Year")
     tournament_container.pyplot(fig)
     tournament_container.markdown(
         caption_text("Figure 2", "Heatmap of tournament participation."),
@@ -816,101 +819,6 @@ def player_vs_player(st_lib: ModuleType, **state: dict) -> None:
         if (player_1_name != "Select a player") and (
             player_2_name != "Select a player"
         ):
-            data = {
-                "metrics": [
-                    "Age",
-                    "Rating",
-                    "Ranking",
-                    "Matches",
-                    "Wins",
-                    "Losses",
-                    "Win Percentage",
-                ],
-                player_1_name: [
-                    rankings_df.loc[
-                        (rankings_df["firstName"] == player_1_name.split(" ")[0])
-                        & (rankings_df["lastName"] == player_1_name.split(" ")[1])
-                    ]["age"].values.tolist()[0],
-                    rankings_df.loc[
-                        (rankings_df["firstName"] == player_1_name.split(" ")[0])
-                        & (rankings_df["lastName"] == player_1_name.split(" ")[1])
-                    ]["rating"].values.tolist()[0],
-                    rankings_df.loc[
-                        (rankings_df["firstName"] == player_1_name.split(" ")[0])
-                        & (rankings_df["lastName"] == player_1_name.split(" ")[1])
-                    ]["ranking"].values.tolist()[0],
-                    int(
-                        active_players_df.loc[
-                            active_players_df["Player"] == player_1_name
-                        ]["TotalMatches"].values.tolist()[0]
-                    ),
-                    int(
-                        active_players_df.loc[
-                            active_players_df["Player"] == player_1_name
-                        ]["WinnerPlayer"].values.tolist()[0]
-                    ),
-                    int(
-                        active_players_df.loc[
-                            active_players_df["Player"] == player_1_name
-                        ]["LoserPlayer"].values.tolist()[0]
-                    ),
-                    round(
-                        100
-                        * int(
-                            active_players_df.loc[
-                                active_players_df["Player"] == player_1_name
-                            ]["WinnerPlayer"].values.tolist()[0]
-                        )
-                        / int(
-                            active_players_df.loc[
-                                active_players_df["Player"] == player_1_name
-                            ]["TotalMatches"].values.tolist()[0]
-                        )
-                    ),
-                ],
-                player_2_name: [
-                    rankings_df.loc[
-                        (rankings_df["firstName"] == player_2_name.split(" ")[0])
-                        & (rankings_df["lastName"] == player_2_name.split(" ")[1])
-                    ]["age"].values.tolist()[0],
-                    rankings_df.loc[
-                        (rankings_df["firstName"] == player_2_name.split(" ")[0])
-                        & (rankings_df["lastName"] == player_2_name.split(" ")[1])
-                    ]["rating"].values.tolist()[0],
-                    rankings_df.loc[
-                        (rankings_df["firstName"] == player_2_name.split(" ")[0])
-                        & (rankings_df["lastName"] == player_2_name.split(" ")[1])
-                    ]["ranking"].values.tolist()[0],
-                    int(
-                        active_players_df.loc[
-                            active_players_df["Player"] == player_2_name
-                        ]["TotalMatches"].values.tolist()[0]
-                    ),
-                    int(
-                        active_players_df.loc[
-                            active_players_df["Player"] == player_2_name
-                        ]["WinnerPlayer"].values.tolist()[0]
-                    ),
-                    int(
-                        active_players_df.loc[
-                            active_players_df["Player"] == player_2_name
-                        ]["LoserPlayer"].values.tolist()[0]
-                    ),
-                    round(
-                        100
-                        * int(
-                            active_players_df.loc[
-                                active_players_df["Player"] == player_2_name
-                            ]["WinnerPlayer"].values.tolist()[0]
-                        )
-                        / int(
-                            active_players_df.loc[
-                                active_players_df["Player"] == player_2_name
-                            ]["TotalMatches"].values.tolist()[0]
-                        )
-                    ),
-                ],
-            }
             data = {
                 "Name": [
                     player_1_name,

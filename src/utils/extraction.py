@@ -194,9 +194,9 @@ def _preprocess_matches(matches_df_dirty, tournaments_df):
     matches_df_dirty = matches_df_dirty.loc[
         matches_df_dirty["MatchDuration"] > pd.Timedelta(0, "m")
     ]
-    matches_df_dirty["MatchDuration"] = (
-        matches_df_dirty["MatchDuration"].astype("timedelta64[m]").astype(int)
-    )
+    matches_df_dirty["MatchDuration"] = matches_df_dirty["MatchDuration"].astype(
+        "timedelta64[s]"
+    ).astype(int) / (60)
     matches_df_dirty["Rallies"] = (
         matches_df_dirty[
             [
